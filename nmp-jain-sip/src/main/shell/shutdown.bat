@@ -1,0 +1,1 @@
+taskkill /f /fi "windowtitle eq nmp-jain-sip-master"

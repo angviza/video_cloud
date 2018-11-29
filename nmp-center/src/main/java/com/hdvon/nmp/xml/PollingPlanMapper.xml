@@ -1,0 +1,195 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<!DOCTYPE mapper PUBLIC "-//mybatis.org//DTD Mapper 3.0//EN" "http://mybatis.org/dtd/mybatis-3-mapper.dtd">
+<mapper namespace="com.hdvon.nmp.mapper.PollingPlanMapper">
+  <resultMap id="BaseResultMap" type="com.hdvon.nmp.vo.PollingPlanVo">
+    <id column="id" jdbcType="VARCHAR" property="id" />
+    <result column="name" jdbcType="VARCHAR"  property="name" />
+    <result column="status" jdbcType="INTEGER"  property="status" />
+    <result column="share_status" jdbcType="INTEGER"  property="shareStatus" />
+    <result column="bgn_time" jdbcType="TIMESTAMP"  property="bgnTime" />
+    <result column="end_time" jdbcType="TIMESTAMP"  property="endTime" />
+    <result column="description" jdbcType="VARCHAR"  property="description" />
+    <!--<result column="create_time" jdbcType="TIMESTAMP"  property="createTime" />-->
+    <result column="update_time" jdbcType="TIMESTAMP"  property="updateTime" />
+    <!--<result column="create_user" jdbcType="VARCHAR"  property="createUser" />-->
+    <!--<result column="update_user" jdbcType="VARCHAR"  property="updateUser" />-->
+  </resultMap>
+
+  <sql id="Customer_Column_List">
+    t.id,t.name,t.status,t.share_status,t.bgn_time,t.end_time,t.description,t.create_time,t.update_time
+  </sql>
+
+    <resultMap id="BaseResultMap3" type="com.hdvon.nmp.vo.PollingPlanVo">
+        <id column="id" jdbcType="VARCHAR" property="id" />
+        <result column="name" jdbcType="VARCHAR"  property="name" />
+        <result column="status" jdbcType="INTEGER"  property="status" />
+        <result column="share_status" jdbcType="INTEGER"  property="shareStatus" />
+        <result column="bgn_time" jdbcType="TIMESTAMP"  property="bgnTime" />
+        <result column="end_time" jdbcType="TIMESTAMP"  property="endTime" />
+        <result column="description" jdbcType="VARCHAR"  property="description" />
+        <!--<result column="create_time" jdbcType="TIMESTAMP"  property="createTime" />-->
+        <result column="update_time" jdbcType="TIMESTAMP"  property="updateTime" />
+        <!-- <association  property="hasNoGroup" jdbcType="INTEGER"  column="id" select="selectPollingPlanHasNoGroup"/>
+        <collection property="cameragroups" ofType="com.hdvon.nmp.vo.PollingplanCameraVo" column="id" select="selectPollingPlanGroupList" /> -->
+    </resultMap>
+
+    <resultMap id="pollingplanCameraVo" type="com.hdvon.nmp.vo.PollingplanCameraVo">
+        <result column="pollingplan_id" jdbcType="VARCHAR"  property="pollingplanId" />
+        <result column="cameragroup_id" jdbcType="VARCHAR"  property="cameragroupId" />
+        <result column="cameragroup_name" jdbcType="VARCHAR"  property="cameragroupName" />
+    </resultMap>
+
+    <select id="selectPollingPlanGroupList" resultMap="pollingplanCameraVo">
+        SELECT
+          pc.pollingplan_id,
+          pc.`cameragroup_id`,
+          c.name cameragroup_name
+        FROM
+          t_cameragrouop c,
+          t_pollingplan_camera pc
+        WHERE pc.`cameragroup_id` = c.`id`
+          AND pc.`TYPE` = '2'
+          AND pc.`pollingplan_id` = #{id}
+    </select>
+
+    <select id="selectPollingPlanHasNoGroup" resultType="Integer">
+        SELECT IF(COUNT(1)>0,1,0) hasNoGroup
+        FROM t_pollingplan_camera pc, 
+        	 t_camera c
+        where pc.camera_id = c.id 
+       		 and pc.type in (1,3)
+       		 and pc.pollingplan_id = #{id}
+    </select>
+
+	<select id="selectPollingPlanList" parameterType = "map" resultMap="BaseResultMap3">
+		select 
+			<include refid="Customer_Column_List"/>
+		from
+			t_polling_plan t
+		<where>
+			<if test="id != null and id !=''">
+				and t.id = #{id}
+			</if>
+			<if test="name != null and name != ''">
+				and t.name like concat('%',#{name},'%')
+			</if>
+			<if test="status != null">
+				and t.status = #{status}
+			</if>
+			<if test="isValid != null">
+	  			and sysdate() between t.bgn_time and t.end_time
+	  		</if>
+			<if test="isAdmin == false">
+  				and ((t.share_status = 0 and t.create_user = #{account})
+	  			or t.share_status = 1
+	  			or (t.share_status = 2 and exists(select u.* from t_user u, t_department d, t_user_department ud, t_plan_share ps where 
+	  				t.create_user = #{account} and t.create_user = u.account and u.id = ud.user_id and d.id = ud.dep_id and d.id =ps.department_id AND t.id = ps.plan_id))
+	  			or (t.share_status = 3 and exists(select u.* from t_user u, t_department d, t_user_department ud, t_plan_share ps where 
+	  				t.create_user = #{account} and t.create_user = u.account and u.id = ud.user_id and d.id = ud.dep_id and d.id = ps.department_id AND t.id = ps.plan_id)))
+  			</if>
+		</where> 
+		order by t.create_time desc
+	</select>
+
+
+
+
+    <resultMap id="BaseResultMap2" type="com.hdvon.nmp.vo.PlanCommonVo">
+        <id column="id" jdbcType="VARCHAR" property="id" />
+        <result column="name" jdbcType="VARCHAR"  property="name" />
+        <result column="type" jdbcType="VARCHAR"  property="type" />
+        <result column="status" jdbcType="INTEGER"  property="status" />
+        <result column="description" jdbcType="VARCHAR"  property="description" />
+    </resultMap>
+
+    <select id="selectAllPlanList" parameterType = "map" resultMap="BaseResultMap2">
+        <if test="type == 'all' or type == 'polling'">
+            select
+            t.id,t.name,t.status,t.description,'polling' as type
+            from
+            t_polling_plan t
+            <where>
+                <if test="id != null and id !=''">
+                    and t.id = #{id}
+                </if>
+                <if test="name != null and name != ''">
+                    and t.name like concat('%',#{name},'%')
+                </if>
+                <if test="status != null">
+                    and t.status = #{status}
+                </if>
+                <if test="isValid != null">
+                    and sysdate() between t.bgn_time and t.end_time
+                </if>
+                <if test="isAdmin == false">
+                    and ((t.share_status = 0 and t.create_user = #{account})
+                    or t.share_status = 1
+                    or (t.share_status = 2 and exists(select u.* from t_user u, t_department d, t_user_department ud, t_plan_share ps where
+                    t.create_user = #{account} and t.create_user = u.account and u.id = ud.user_id and d.id = ud.dep_id and d.id =ps.department_id AND t.id = ps.plan_id))
+                    or (t.share_status = 3 and exists(select u.* from t_user u, t_department d, t_user_department ud, t_plan_share ps where
+                    t.create_user = #{account} and t.create_user = u.account and u.id = ud.user_id and d.id = ud.dep_id and d.id = ps.department_id AND t.id = ps.plan_id)))
+                </if>
+            </where>
+            <!--order by t.create_time desc-->
+        </if>
+
+        <if test="type == 'all'">union</if>
+
+        <if test="type == 'all' or type == 'ball'">
+            select
+            t.id,t.name,t.status,t.description,'ball' as type
+            from
+            t_ball_plan t, t_camera c, t_device d
+            where t.camera_id = c.id
+            and c.device_id = d.id
+            and (d.sxjlx = 1 or d.sxjlx = 2)
+            <if test="name != null and name != ''">
+                and t.name like concat('%',#{name},'%')
+            </if>
+            <if test="status != null">
+                and t.status = #{status}
+            </if>
+            <if test="isValid != null">
+                and sysdate() between t.bgn_time and t.end_time
+            </if>
+            <if test="isAdmin == false">
+                and ((t.share_status = 0 and t.create_user = #{account})
+                or t.share_status = 1
+                or (t.share_status = 2 and exists(select u.* from t_user u, t_department d, t_user_department ud, t_plan_share ps where
+                t.create_user = #{account} and t.create_user = u.account and u.id = ud.user_id and d.id = ud.dep_id and d.id =ps.department_id AND t.id = ps.plan_id))
+                or (t.share_status = 3 and exists(select u.* from t_user u, t_department d, t_user_department ud, t_plan_share ps where
+                t.create_user = #{account} and t.create_user = u.account and u.id = ud.user_id and d.id = ud.dep_id and d.id = ps.department_id AND t.id = ps.plan_id)))
+            </if>
+        </if>
+
+        <if test="type == 'all'">union</if>
+
+        <if test="type == 'all' or type == 'wall'">
+            select
+            t.id,t.name,t.status,t.description,'wall' as type
+            from
+            t_wall_plan t, t_matrix m
+            where t.matrix_id = m.id
+            <if test="id != null and id != ''">
+                and t.id = #{id}
+            </if>
+            <if test="name != null and name != ''">
+                and t.name like concat('%',#{name},'%')
+            </if>
+            <if test="status != null">
+                and t.status = #{status}
+            </if>
+            <if test="isValid != null">
+                and sysdate() between t.bgn_time and t.end_time
+            </if>
+            <if test="isAdmin == false">
+                and ((t.share_status = 0 and t.create_user = #{account})
+                or t.share_status = 1
+                or (t.share_status = 2 and exists(select u.* from t_user u, t_department d, t_user_department ud, t_plan_share ps where
+                t.create_user = #{account} and t.create_user = u.account and u.id = ud.user_id and d.id = ud.dep_id and d.id =ps.department_id AND t.id = ps.plan_id))
+                or (t.share_status = 3 and exists(select u.* from t_user u, t_department d, t_user_department ud, t_plan_share ps where
+                t.create_user = #{account} and t.create_user = u.account and u.id = ud.user_id and d.id = ud.dep_id and d.id = ps.department_id AND t.id = ps.plan_id)))
+            </if>
+        </if>
+    </select>
+</mapper>

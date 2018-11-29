@@ -1,0 +1,118 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<!DOCTYPE mapper PUBLIC "-//mybatis.org//DTD Mapper 3.0//EN" "http://mybatis.org/dtd/mybatis-3-mapper.dtd">
+<mapper namespace="com.hdvon.nmp.mapper.CameraLogMapper">
+    <resultMap id="BaseResultMap" type="com.hdvon.nmp.vo.CameraLogVo">
+        <id column="id" jdbcType="VARCHAR" property="id" />
+        <result column="user_id" jdbcType="VARCHAR"  property="userId" />
+        <result column="sbbm" jdbcType="VARCHAR"  property="sbbm" />
+        <result column="call_id" jdbcType="VARCHAR"  property="callId" />
+        <result column="user_ip" jdbcType="VARCHAR"  property="userIp" />
+        <result column="play_type" jdbcType="VARCHAR"  property="playType" />
+        <result column="state" jdbcType="VARCHAR"  property="state" />
+        <!--<result column="create_time" jdbcType="TIMESTAMP"  property="createTime" />-->
+        <!--<result column="update_time" jdbcType="TIMESTAMP"  property="updateTime" />-->
+    </resultMap>
+
+    <sql id="Customer_Column_List">
+        t.id,t.user_id,t.sbbm,t.call_id,t.user_ip,t.play_type,t.state
+    </sql>
+    
+    <select id="seleteByParam" parameterType="map" resultMap="BaseResultMap">
+      select <include refid="Customer_Column_List"></include> from t_camera_log t 
+      <where>
+       <if test="userId !=null and userId !='' ">
+          and t.user_id=#{userId}
+       </if>
+       <if test="userIp !=null and userIp !='' ">
+         and t.user_ip =#{userIp}
+       </if>
+      </where>
+    </select>
+    
+    <!-- 当前正在被操作的设备 -->
+    <select id="selectgCameraLogByPage" parameterType="map" resultType="com.hdvon.nmp.vo.CameraVo">
+		SELECT
+			device.SBBM AS sbbm,
+			device.SBMC AS sbmc,
+			device.SBZT AS sbzt,
+			a.NAME AS addressName
+		FROM
+			t_camera_log siplog,
+			t_device device,
+			t_camera camera,
+			t_camera_mapping cm
+		    LEFT JOIN t_address a ON cm.address_id = a.id
+		WHERE
+			siplog.sbbm = device.SBBM
+			AND camera.device_id = device.id
+			AND cm.camera_id = camera.id
+       <if test="userId !=null and userId !='' ">
+          and siplog.user_id=#{userId}
+      </if>
+      <if test="sbbm !=null and sbbm !='' ">
+          and device.sbbm like concat('%',#{sbbm},'%')
+      </if>
+      <if test="sbmc !=null and sbmc !='' ">
+          and device.sbmc like concat('%',#{sbmc},'%')
+      </if>
+      <if test="sbzt !=null and sbzt !='' ">
+          and device.sbzt like concat('%',#{sbzt},'%')
+      </if>
+      <if test="addressIds !=null and addressIds.size()>0 ">
+          and cm.address_id in
+          <foreach collection="addressIds" item="item" open="(" close=")"  separator=",">
+            #{item}
+         </foreach>
+      </if>
+    GROUP BY device.sbbm
+    ORDER BY siplog.create_time desc
+    </select>
+    
+    <!-- 当前操作视频用户 -->
+    <select id="selectOnlineUsersByPage" parameterType="map" resultType="com.hdvon.nmp.vo.UserVo">
+ 	<choose>
+ 	 <!-- 操作视频用户 -->
+ 	 <when test="sbbm !=null and sbbm !='' ">
+	 	SELECT `user`.id,`user`.account,`user`.`name`,`user`.`level`,`user`.`enable`,user.last_login_date as lastLoginDate,
+	     (SELECT d.name FROM t_user_department ud , t_department d WHERE ud.user_id = user.id AND ud.dep_id = d.id LIMIT 1) departmentName
+	     FROM t_camera_log siplog ,t_user user
+	     where siplog.user_id=`user`.id 
+	      <if test="sbbm !=null and sbbm !='' ">
+	          and siplog.sbbm like concat('%',#{sbbm},'%')
+	      </if>
+	      <if test="search != null and search != ''">
+	         and (user.NAME like concat('%',#{search},'%') or user.account = #{search} )
+	      </if>
+	      GROUP BY user.id
+ 	 </when>
+ 	 
+ 	 <otherwise>
+ 	   <!-- 在线用户 -->
+	 	  SELECT `user`.id,`user`.account,`user`.`name`,`user`.`level`,`user`.`enable`,user.last_login_date as lastLoginDate,user.last_update_date,
+	      (SELECT d.name FROM t_user_department ud , t_department d WHERE ud.user_id = user.id AND ud.dep_id = d.id LIMIT 1) departmentName 
+		  from t_user user
+		  <if test="search != null and search != ''">
+	         and (user.NAME like concat('%',#{search},'%') or user.account = #{search} )
+	      </if>
+         <if test="departmentIds != null and departmentIds.size() > 0">
+             and user.id IN(
+              SELECT ud.`user_id` FROM t_user_department ud
+              WHERE ud.`dep_id` in
+               <foreach collection="departmentIds" item="item" open="(" close=")"  separator=",">
+	              #{item}
+	           </foreach>
+            )
+       	</if>
+       	<if test="listToken != null and listToken.size() > 0">
+           and ulog.token_id not IN(
+              <foreach collection="listToken" item="item" open="(" close=")"  separator=",">
+              #{item}
+               </foreach>
+              )
+       	</if>
+		 GROUP BY `user`.id HAVING TIMESTAMPDIFF(MINUTE,user.last_update_date,NOW()) &lt; #{timeOut}
+ 	 </otherwise>
+ 	</choose>
+    </select>
+    
+</mapper>

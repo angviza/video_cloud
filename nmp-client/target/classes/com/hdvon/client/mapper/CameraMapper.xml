@@ -1,0 +1,125 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<!DOCTYPE mapper PUBLIC "-//mybatis.org//DTD Mapper 3.0//EN" "http://mybatis.org/dtd/mybatis-3-mapper.dtd">
+<mapper namespace="com.hdvon.client.mapper.CameraMapper">
+
+	<select id="findAllCamera" resultType="com.hdvon.client.vo.EsCameraVo">
+		SELECT
+			a.*, encodeserver. NAME AS encoderServerName,
+			address.`name` AS addressName,
+			address.`code` AS addressCode,
+			org.`name` AS orgName,
+			org.org_code AS orgCode,
+			project.`name` AS projectName
+		FROM
+			(
+				SELECT
+					device.id AS id,
+					camera.id AS cameraId,
+					device.id AS deviceId,
+					device.SBMC AS deviceName,
+					device.SBBM AS deviceCode,
+					device.SXJLX AS deviceType,
+					CONCAT(device.WD, ',', device.JD) AS location,
+					device.JD AS longitude,
+					device.WD AS latitude,
+					device.AZDZ AS installAddress,
+					device.SBCS AS deviceCompany,
+					device.IPv4 AS ip,
+					device.WZLX AS positionType,
+					device.JSDW AS constructionUnit,
+					device.CJDLB AS collectionCategory,
+					device.SXJGNLX AS functionalType,
+					cm.project_id AS projectId,
+					cm.address_id AS addressId,
+					cm.org_id AS orgId,
+					cm.encoder_server_id AS encoderServerId,
+					device.SBZT AS status,
+					device.CJDW AS urbanConstructionUnit,
+					device.SXJSSBM AS sxjssbm
+ 				FROM
+					t_device device
+				LEFT JOIN t_camera camera ON device.id = camera.device_id
+				LEFT JOIN t_camera_mapping cm ON camera.id = cm.camera_id
+			) a
+		LEFT JOIN t_encoder_server AS encodeserver ON encodeserver.id = a.encoderServerId
+		LEFT JOIN t_project AS project ON project.id = a.projectId
+		LEFT JOIN t_address AS address ON address.id = a.addressId
+		LEFT JOIN t_organization AS org ON org.id = a.orgId
+	</select>
+	
+
+    
+    <select id="findCameraRecord" parameterType="java.lang.String" resultType="com.hdvon.client.vo.CameraVo">
+	select d.sbbm,d.sbmc,d.xzqh,d.lxccsbip,d.ccxttdh,d.mpdz,d.jd,d.wd,d.azdz,d.mpdz,cm.address_id as addressId,bg.code as bussGroupCode,
+	d.wzlx,(select name from t_address where id = cm.address_id limit 1)as addressName,
+	cm.org_id,(select name from t_organization where id=cm.org_id limit 1)as orgName,
+	cm.project_id,(select name from t_project where id=cm.project_id limit 1)as projectName from t_device d
+	LEFT JOIN t_camera camera on camera.device_id=d.id 
+	LEFT JOIN t_camera_mapping cm on cm.camera_id =camera.id
+	LEFT JOIN t_bussiness_group bg on bg.id=d.buss_group_id
+		 where d.id=#{deviceId}
+    	
+    </select>
+    
+    <select id="findCameraByDevId" parameterType="com.hdvon.client.vo.CameraMapVo" resultType="com.hdvon.client.vo.EsCameraVo">
+    
+		SELECT
+			a.*, encodeserver. NAME AS encoderServerName,
+			address.`name` AS addressName,
+			address.`code` AS addressCode,
+			org.`name` AS orgName,
+			org.org_code AS orgCode,
+			project.`name` AS projectName
+		FROM
+			(
+				SELECT
+				    device.id AS id,
+					device.id AS deviceId,
+					device.SBMC AS deviceName,
+					camera.id AS cameraId,
+					device.SBBM AS deviceCode,
+					device.SXJLX AS deviceType,
+					CONCAT(device.WD, ',', device.JD) AS location,
+					device.JD AS longitude,
+					device.WD AS latitude,
+					device.AZDZ AS installAddress,
+					device.SBCS AS deviceCompany,
+					device.IPv4 AS ip,
+					device.WZLX AS positionType,
+					device.JSDW AS constructionUnit,
+					device.CJDLB AS collectionCategory,
+					device.SXJGNLX AS functionalType,
+					cm.project_id AS projectId,
+					cm.address_id AS addressId,
+					cm.org_id AS orgId,
+					cm.encoder_server_id AS encoderServerId,
+					'2018-01-01 00:00:00' AS startDate,
+					'2050-01-01 00:00:00' AS endDate
+				FROM
+					t_device device,
+					t_camera camera,
+					t_camera_mapping cm
+				WHERE
+				 device.id = camera.device_id
+				 AND camera.id = cm.camera_id
+				 <if test="deviceList != null and deviceList.size() > 0 ">
+					 and device.id IN
+					<foreach collection="deviceList" item="item" open="(" close=")"  separator=",">
+			        	#{item}
+			        </foreach>	
+			     </if>
+			) a
+		LEFT JOIN t_encoder_server AS encodeserver ON encodeserver.id = a.encoderServerId
+		LEFT JOIN t_project AS project ON project.id = a.projectId
+		LEFT JOIN t_address AS address ON address.id = a.addressId
+		LEFT JOIN t_organization AS org ON org.id = a.orgId
+
+    </select>
+    
+    <select id="checkUserCameraRights" parameterType="java.lang.String" resultType="com.hdvon.client.vo.CheckCameraVo">
+    		select camera.id as cameraId,camera.device_id as deviceId 
+		from t_camera camera,t_user_resourcerole AS ur,t_resourcerole AS r ,t_resourcerole_camera_permission AS rap
+		where rap.camera_id=camera.device_id and rap.resoucerole_id = r.id and r.id = ur.resourcerole_id
+			and ur.user_id= #{userId}
+    </select>
+</mapper>

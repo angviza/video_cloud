@@ -1,0 +1,37 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<!DOCTYPE mapper PUBLIC "-//mybatis.org//DTD Mapper 3.0//EN" "http://mybatis.org/dtd/mybatis-3-mapper.dtd">
+<mapper namespace="com.hdvon.nmp.mapper.DictionaryTypeMapper">
+  <resultMap id="BaseResultMap" type="com.hdvon.nmp.vo.DictionaryTypeVo">
+    <id column="id" jdbcType="VARCHAR" property="id" />
+    <result column="ch_name" jdbcType="VARCHAR"  property="chName" />
+    <result column="en_name" jdbcType="VARCHAR"  property="enName" />
+    <result column="remark" jdbcType="VARCHAR"  property="remark" />
+    <result column="create_time" jdbcType="TIMESTAMP"  property="createTime" />
+    <!--<result column="update_time" jdbcType="TIMESTAMP"  property="updateTime" />-->
+    <!--<result column="create_user" jdbcType="VARCHAR"  property="createUser" />-->
+    <!--<result column="update_user" jdbcType="VARCHAR"  property="updateUser" />-->
+  </resultMap>
+
+  <sql id="Customer_Column_List">
+    t.id,t.ch_name,t.en_name,t.remark,t.create_time
+  </sql>
+
+
+  <select id="selectByParam" parameterType="map" resultMap="BaseResultMap">
+      select <include refid="Customer_Column_List"></include> from t_dictionary_type t
+      <where>
+          <if test="search != null and search !=''">
+             and (t.ch_name like concat('%',#{search},'%') or t.en_name like concat('%',#{search},'%'))
+          </if>
+          <if test="chName !=null and chName !='' ">
+            and t.ch_name like concat('%',#{chName},'%')
+          </if>
+          <if test="enName !=null and enName !='' ">
+            and t.en_name like concat('%',#{enName},'%')
+          </if>
+      </where>
+      ORDER BY t.create_time desc 
+  </select>
+     
+
+</mapper>

@@ -1,0 +1,24 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<!DOCTYPE mapper PUBLIC "-//mybatis.org//DTD Mapper 3.0//EN" "http://mybatis.org/dtd/mybatis-3-mapper.dtd">
+<mapper namespace="com.hdvon.nmp.mapper.CollectMappingMapper">
+    <resultMap id="BaseResultMap" type="com.hdvon.nmp.vo.CollectMappingVo">
+        <id column="id" jdbcType="VARCHAR" property="id" />
+        <result column="collect_id" jdbcType="VARCHAR"  property="collectId" />
+        <result column="device_id" jdbcType="VARCHAR"  property="deviceId" />
+        <result column="device_name" jdbcType="VARCHAR"  property="deviceName" />
+        <result column="device_sbbm" jdbcType="VARCHAR"  property="deviceSbbm" />
+    </resultMap>
+
+    <sql id="Customer_Column_List">
+        t.id,t.collect_id,t.device_id,t.device_name,t.device_sbbm
+    </sql>
+
+
+	<select id="getListBySub" parameterType="java.util.Map" resultType="com.hdvon.nmp.vo.CollectMappingVo">
+		select DISTINCT(cm.device_id) as deviceId,cm.device_name as deviceName,cm.device_sbbm as deviceSbbm from t_collect c,t_collect_mapping cm 
+		where c.id=cm.collect_id and c.create_user=#{account}
+		<if test="collectId != null and collectId != ''">
+		 	and c.collect_id = #{collectId}
+		</if>
+	</select>
+</mapper>

@@ -1,0 +1,43 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<!DOCTYPE mapper PUBLIC "-//mybatis.org//DTD Mapper 3.0//EN" "http://mybatis.org/dtd/mybatis-3-mapper.dtd">
+<mapper namespace="com.hdvon.nmp.mapper.PollingplanCameraMapper">
+  <resultMap id="BaseResultMap" type="com.hdvon.nmp.vo.PollingplanCameraVo">
+    <id column="id" jdbcType="VARCHAR" property="id" />
+    <result column="pollingplan_id" jdbcType="VARCHAR"  property="pollingplanId" />
+    <result column="camera_id" jdbcType="VARCHAR"  property="cameraId" />
+        <result column="device_id" jdbcType="VARCHAR"  property="deviceId" />
+    <result column="camera_code" jdbcType="VARCHAR"  property="deviceCode" />
+    <result column="camera_name" jdbcType="VARCHAR"  property="name" />
+    <result column="cameragroup_id" jdbcType="VARCHAR"  property="cameragroupId" />
+    <result column="cameragroup_name" jdbcType="VARCHAR"  property="cameragroupName" />
+    <result column="sort" jdbcType="INTEGER"  property="sort" />
+  </resultMap>
+
+  <sql id="Customer_Column_List">
+    t.id,t.pollingplan_id,t.camera_id,t.cameragroup_id,t.cameragroup_name,t.sort
+  </sql>
+  <sql id="Customer_Relate_List">
+    t.id,t.pollingplan_id,t.camera_id,t.cameragroup_id,t.cameragroup_name,t.sort,d.sbmc as camera_name,d.sbbm as camera_code,c.id as device_id
+  </sql>
+	<select id="selectCamerasByPollingplanIds" parameterType="java.util.List" resultMap="BaseResultMap">
+		select <include refid="Customer_Column_List"/> from t_pollingplan_camera t
+    	<where>
+    		<if test="pollingplanIds != null">
+    			<foreach collection="pollingplanIds" item="pollingplanId" index="index"
+		            open=" and t.pollingplan_id in(" close=")" separator=",">
+		            #{pollingplanId}
+		        </foreach>
+    		</if>
+    	</where>
+	</select>
+	
+	<select id="selectPlanRelatedCameras" parameterType="map" resultMap="BaseResultMap">
+      select <include refid="Customer_Relate_List"></include> from t_pollingplan_camera t, t_camera c, t_device d
+      <where>
+      	c.device_id = d.id and c.id = t.camera_id
+          <if test="pollingplanId != null and pollingplanId !=''">
+             and t.pollingplan_id=#{pollingplanId}
+          </if>
+      </where>
+</select>
+</mapper>

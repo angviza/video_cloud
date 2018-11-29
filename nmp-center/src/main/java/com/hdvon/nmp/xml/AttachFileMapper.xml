@@ -1,0 +1,27 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<!DOCTYPE mapper PUBLIC "-//mybatis.org//DTD Mapper 3.0//EN" "http://mybatis.org/dtd/mybatis-3-mapper.dtd">
+<mapper namespace="com.hdvon.nmp.mapper.AttachFileMapper">
+    <resultMap id="BaseResultMap" type="com.hdvon.nmp.vo.AttachFileVo">
+        <id column="id" jdbcType="VARCHAR" property="id" />
+        <result column="type" jdbcType="INTEGER"  property="type" />
+        <result column="file_name" jdbcType="VARCHAR"  property="fileName" />
+        <result column="file_path" jdbcType="VARCHAR"  property="filePath" />
+        <!--<result column="create_time" jdbcType="TIMESTAMP"  property="createTime" />-->
+        <!--<result column="create_user" jdbcType="VARCHAR"  property="createUser" />-->
+        <!--<result column="update_time" jdbcType="TIMESTAMP"  property="updateTime" />-->
+        <!--<result column="update_user" jdbcType="VARCHAR"  property="updateUser" />-->
+    </resultMap>
+
+    <sql id="Customer_Column_List">
+        t.id,t.type,t.file_name,t.file_path
+    </sql>
+	<select id="queryAttachFileByNoticeId" parameterType="java.lang.String" resultMap="BaseResultMap">
+	      SELECT AF.*
+	      FROM t_attach_file AF, t_file_relate FR
+	      <where>
+	         <if test="id != null and id != ''">
+                 AF.id = FR.file_Id and FR.relate_id = #{id}
+	         </if>
+	      </where>
+	 </select>
+</mapper>

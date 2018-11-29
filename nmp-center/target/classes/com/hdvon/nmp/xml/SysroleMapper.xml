@@ -1,0 +1,117 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<!DOCTYPE mapper PUBLIC "-//mybatis.org//DTD Mapper 3.0//EN" "http://mybatis.org/dtd/mybatis-3-mapper.dtd">
+<mapper namespace="com.hdvon.nmp.mapper.SysroleMapper">
+  <resultMap id="BaseResultMap" type="com.hdvon.nmp.vo.SysroleVo">
+    <id column="id" jdbcType="VARCHAR" property="id" />
+    <result column="name" jdbcType="VARCHAR"  property="name" />
+    <result column="is_menu_assigned" jdbcType="INTEGER"  property="isMenuAssigned" />
+    <result column="is_perm_assigned" jdbcType="INTEGER"  property="isPermAssigned" />
+    <result column="orderby" jdbcType="INTEGER"  property="orderby" />
+    <result column="description" jdbcType="VARCHAR"  property="description" />
+    <result column="pid" jdbcType="VARCHAR"  property="pid" />
+    <result column="permissionplan_id" jdbcType="VARCHAR"  property="permissionplanId" />
+    <result column="parentRoleName" jdbcType="VARCHAR"  property="parentName" />
+    <result column="userTotal" jdbcType="INTEGER"  property="userTotal" />
+    <!--<result column="create_time" jdbcType="TIMESTAMP"  property="createTime" />-->
+    <!--<result column="update_time" jdbcType="TIMESTAMP"  property="updateTime" />-->
+    <!--<result column="create_user" jdbcType="VARCHAR"  property="createUser" />-->
+    <!--<result column="update_user" jdbcType="VARCHAR"  property="updateUser" />-->
+    <association property="parentName" select="queryParentName" column="pid"/>
+  </resultMap>
+
+  <sql id="Customer_Column_List">
+    t.id,t.name,t.is_menu_assigned,t.is_perm_assigned,t.orderby,t.description,t.pid
+  </sql>
+
+    <select id="queryParentName" resultType="String">
+        select `name` from t_sysrole where id = #{id}
+    </select>
+
+    <!-- 查询用户的系统角色 -->
+    <select id="querySysRolesByUserId" resultMap="BaseResultMap">
+        select
+        <include refid="Customer_Column_List" />,(select name from t_sysrole ts where id=t.pid limit 1)as  parentName
+        from
+        t_sysrole t, t_user_sysrole us
+        <where>
+            and t.id = us.role_id
+            <if test="userIds != null">
+	            <foreach close=")" collection="userIds" item="item" open=" and us.user_id in(" separator=",">
+	                #{item}
+	            </foreach>
+            </if>
+        </where>
+    </select>
+
+    <!-- 查询用户的系统角色 -->
+    <select id="querySysRoles" resultMap="BaseResultMap">
+        select
+        <include refid="Customer_Column_List" />
+        from
+        t_sysrole t
+        <where>
+            <if test="id != null and id != ''">
+                and t.id = #{id}
+            </if>
+            <if test="pidOrId != null and pidOrId != ''">
+                and (t.pid = #{pidOrId} or t.id = #{pidOrId})
+            </if>
+            <if test="likeName != null and likeName != ''">
+                and t.name like concat('%',#{likeName}, '%')
+            </if>
+        </where>
+        ORDER BY t.create_time desc 
+    </select>
+    <!-- 查询权限预案下关联的系统角色 -->
+	<select id="selectSysrolesInPermissionPlan" parameterType="map" resultMap="BaseResultMap">
+		select
+			<include refid="Customer_Column_List"/>,p.permissionplan_id
+		from 
+			t_permissionplan_sysrole p, t_sysrole t
+		where 
+			p.permissionplan_id = #{permissionplanId}
+			and p.sysrole_id = t.id
+	</select>
+
+	<!-- 根据当前登录用户获取的系统角色用户树 -->
+  <select id="getUserAuthorizeSysRoleTree" parameterType="java.lang.String" resultType="com.hdvon.nmp.vo.SysroleVo">
+    <!-- select DISTINCT(sr.id) as id,sr.name as name,sr.pid as pid,(select name from t_sysrole ts where id=sr.pid limit 1)as  parentName,0 as isUser from t_sysrole sr
+	union
+	select DISTINCT(CONCAT('U_',u.id)) as id,u.name as name,us.role_id as pid ,(select name from t_sysrole ts where ts.id=us.role_id limit 1)as  parentName,1 as isUser from t_user u, t_user_sysrole us
+	where us.role_id in (SELECT usr.role_id from t_user_sysrole usr where usr.user_id = #{userId}) and u.id = us.user_id
+	 -->
+	select DISTINCT(sr.id) as id,sr.name as name,sr.pid as pid,(select name from t_sysrole ts where id=sr.pid limit 1)as  parentName,0 as isUser from t_sysrole sr
+	union select DISTINCT(CONCAT('U_',u.id)) as id,u.name as name,us.role_id as pid ,(select name from t_sysrole ts where ts.id=us.role_id limit 1)as  parentName,1 as isUser
+	from t_user u, t_user_sysrole us ,t_sysrole ts1
+	where us.role_id = ts1.id and u.id = us.user_id
+  </select>
+  
+  <!-- 角色用户数量 -->
+  <select id="selectRoleUserCount" parameterType="map" resultMap="BaseResultMap">
+     SELECT role.id,role.`name` ,COUNT(u.id) userTotal,
+	(SELECT s.name from t_sysrole s where s.pid=role.id LIMIT 1)as parentRoleName
+	from t_user u,t_user_sysrole urole,t_sysrole role
+	where u.id=urole.user_id and urole.role_id =role.id
+	and u.`enable` !='-1'
+	<if test="roleIds !=null and roleIds.size() > 0">
+	  <foreach collection="roleIds" open=" and role.id IN(" close=")" item="item" separator=",">
+	       #{item}
+	   </foreach>
+	</if>
+	GROUP BY role.id
+	UNION 
+	SELECT role.id ,role.`name`,COUNT(u.id) userTotal,
+	(SELECT s.name from t_sysrole s where s.pid=role.id LIMIT 1)as parentRoleName
+	from t_user u,t_user_sysrole urole,t_sysrole role
+	where u.id=urole.user_id and urole.role_id =role.id
+	and u.`enable` !='-1'
+	<if test="roleIds !=null and roleIds.size() > 0">
+	  <foreach collection="roleIds" open=" and role.pid IN(" close=")" item="item" separator=",">
+	       #{item}
+	   </foreach>
+	</if> 
+	GROUP BY role.id
+  
+  </select>
+  
+</mapper>

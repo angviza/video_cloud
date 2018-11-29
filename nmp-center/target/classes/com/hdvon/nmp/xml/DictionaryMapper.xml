@@ -1,0 +1,99 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<!DOCTYPE mapper PUBLIC "-//mybatis.org//DTD Mapper 3.0//EN" "http://mybatis.org/dtd/mybatis-3-mapper.dtd">
+<mapper namespace="com.hdvon.nmp.mapper.DictionaryMapper">
+  <resultMap id="BaseResultMap" type="com.hdvon.nmp.vo.DictionaryVo">
+    <id column="id" jdbcType="VARCHAR" property="id" />
+    <result column="dictionary_type_id" jdbcType="VARCHAR"  property="dictionaryTypeId" />
+    <result column="ch_name" jdbcType="VARCHAR"  property="chName" />
+    <result column="en_name" jdbcType="VARCHAR"  property="enName" />
+    <result column="value" jdbcType="VARCHAR"  property="value" />
+    <result column="enable" jdbcType="TINYINT"  property="enable" />
+    <result column="remark" jdbcType="VARCHAR"  property="remark" />
+    <result column="orderby" jdbcType="INTEGER"  property="orderby" />
+    <!--<result column="create_user" jdbcType="VARCHAR"  property="createUser" />-->
+    <result column="create_time" jdbcType="TIMESTAMP"  property="createTime" />
+    <!--<result column="update_user" jdbcType="VARCHAR"  property="updateUser" />-->
+    <!--<result column="update_time" jdbcType="TIMESTAMP"  property="updateTime" />-->
+  </resultMap>
+
+  <sql id="Customer_Column_List">
+    t.id,t.dictionary_type_id,t.ch_name,t.en_name,t.value,t.enable,t.remark,t.orderby,t.create_time
+  </sql>
+
+    <resultMap id="selectDictionaryListMap" type="com.hdvon.nmp.vo.DictionaryVo">
+        <id column="id" jdbcType="VARCHAR" property="id" />
+        <result column="ch_name" jdbcType="VARCHAR"  property="chName" />
+        <result column="en_name" jdbcType="VARCHAR"  property="enName" />
+        <result column="value" jdbcType="VARCHAR"  property="value" />
+        <result column="type_ch_name" jdbcType="VARCHAR"  property="typeChName" />
+        <result column="type_eh_name" jdbcType="VARCHAR"  property="typeEhName" />
+    </resultMap>
+    
+    
+	<select id="selectByParam" parameterType="map" resultMap="BaseResultMap">
+	      select <include refid="Customer_Column_List"></include>
+          from t_dictionary t
+	      <where>
+	          <if test="chName != null and chName !=''">
+	             and t.ch_name=#{chName}
+	          </if>
+	          <if test="enName != null and enName !=''">
+	             and t.en_name=#{enName}
+	          </if>
+	          <if test="dictionaryTypeId != null and dictionaryTypeId !=''">
+	             and t.dictionary_type_id=#{dictionaryTypeId}
+	          </if>
+	          <if test="value != null and value !=''">
+	             and t.value=#{value}
+	          </if>
+	      </where>
+        ORDER BY t.create_time desc
+    </select>
+
+    <!-- 根据字典id查询字典信息 -->
+    <select id="queryDictionaryInfoById" parameterType="java.lang.String" resultType="com.hdvon.nmp.vo.DictionaryVo">
+        select
+        d.id,d.dictionary_type_id as dictionaryTypeId,d.ch_name as chName,d.en_name as enName,d.value,d.enable,d.remark,d.orderby,d.create_user as createUser,d.create_time as createTime,d.update_user as updateUser,d.update_time as updateTime,dt.ch_name as typeChName
+        from
+        t_dictionary d,t_dictionary_type dt
+        where
+        d.dictionary_type_id = dt.id
+        and d.id = #{id}
+    </select>
+    <!-- 分页查询字典信息列表 -->
+    <select id="queryDictionaryVoPage" parameterType="map" resultType="com.hdvon.nmp.vo.DictionaryVo">
+        select
+        d.id,d.dictionary_type_id as dictionaryTypeId,d.ch_name as chName,d.en_name as enName,d.value,d.enable,d.remark,d.orderby,d.create_user as createUser,d.create_time as createTime,d.update_user as updateUser,d.update_time as updateTime,dt.ch_name as typeChName
+        from
+        t_dictionary d,t_dictionary_type dt
+        where
+        d.dictionary_type_id = dt.id
+        <if test="name != null and name != ''">
+            and ((d.ch_name like concat('%',#{name},'%')) or (d.en_name like concat('%',#{name},'%')))
+        </if>
+        <if test="dictionaryTypeId != null and dictionaryTypeId != ''">
+        	and dt.id =#{dictionaryTypeId}
+        </if>
+        order by createTime desc
+    </select>
+
+    <!-- 根据数字字典类型英文名查询出字典列表 -->
+    <select id="selectDictionaryList" parameterType="java.lang.String" resultMap="selectDictionaryListMap">
+        SELECT d.id,d.ch_name,d.en_name,d.`value`,type.ch_name as type_ch_name,type.en_name as type_eh_name
+        FROM
+        t_dictionary d,
+        t_dictionary_type type
+        where
+        d.dictionary_type_id =type.id
+        <if test="searchTypes != null and searchTypes.size() > 0">
+	        <foreach collection="searchTypes" open=" AND type.en_name IN(" close=")" item="type" separator=",">
+	            #{type}
+	        </foreach>
+        </if>
+        <if test="value != null and value != ''">
+        	and d.value= #{value}
+        </if>
+        order by type.en_name asc,d.orderby asc
+    </select>
+
+</mapper>

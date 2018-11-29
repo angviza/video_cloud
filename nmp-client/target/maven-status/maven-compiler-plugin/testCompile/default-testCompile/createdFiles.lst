@@ -1,0 +1,11 @@
+com\hdvon\client\search\CameraSearchServiceTest.class
+com\hdvon\client\UserServiceTests.class
+com\hdvon\client\TreeServiceTest.class
+com\hdvon\client\search\UserCameraSearchServiceTest.class
+com\hdvon\client\CameraServiceTests.class
+com\hdvon\client\search\CameraGroupSearchServiceTest.class
+com\hdvon\client\search\TreeServiceTest.class
+com\hdvon\client\search\UserCameraGroupSearchServiceTest.class
+com\hdvon\client\TreeNodeServiceTest.class
+com\hdvon\client\EsUpdateServiceTest.class
+com\hdvon\client\NmpClientProviderApplicationTests.class

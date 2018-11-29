@@ -1,0 +1,56 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<!DOCTYPE mapper PUBLIC "-//mybatis.org//DTD Mapper 3.0//EN" "http://mybatis.org/dtd/mybatis-3-mapper.dtd">
+<mapper namespace="com.hdvon.nmp.mapper.UserDepartmentDataMapper">
+    <resultMap id="BaseResultMap" type="com.hdvon.nmp.vo.UserDepartmentDataVo">
+        <id column="id" jdbcType="VARCHAR" property="id" />
+        <result column="user_id" jdbcType="VARCHAR"  property="userId" />
+        <result column="department_id" jdbcType="VARCHAR"  property="departmentId" />
+        <result column="is_check" jdbcType="VARCHAR"  property="isCheck" />
+    </resultMap>
+
+    <sql id="Customer_Column_List">
+        t.id,t.user_id,t.department_id
+    </sql>
+    
+     <!--&lt;!&ndash; 用户可管里部门，已关联is_check 值为1 &ndash;&gt;-->
+    <!--<select id="selectDepartmentUser" parameterType="java.lang.String" resultType="com.hdvon.nmp.vo.DepartmentUserTreeVo">-->
+       <!--select DISTINCT(dept.id) as id,dept.name as name,dept.pid as pid,(SELECT IF(COUNT(1)>0,1,0) FROM t_user_department_data udd WHERE udd.department_id = dept.`id` AND udd.user_id= #{userId}) isCheck,'department' as nodeType-->
+	 <!--from t_department dept -->
+    <!--</select>-->
+
+	<select id="getUserAuthorizeDeptTree" parameterType="java.lang.String" resultType="com.hdvon.nmp.vo.DepartmentUserTreeVo">
+	select DISTINCT(dept.id) as id,dept.name as name,dept.pid as pid,(select name from t_department where id=dept.pid limit 1)as  parentName,0 as isUser from t_user_department_data udd,t_department dept where udd.user_id=#{userId}
+	union
+	select DISTINCT(CONCAT('U_',`user`.id)) as id,`user`.name as name,ud.dep_id as pid,(select name from t_department where id=ud.dep_id limit 1)as  parentName,1 as isUser from t_user_department_data udd,t_user_department ud,t_user user
+	 where udd.user_id=#{userId} and udd.department_id=ud.dep_id and ud.user_id=user.id
+	group by id
+	</select>
+	
+	<!--&lt;!&ndash; 查询权限预案下关联的用户，并在当前登录用户的可管理部门用户中标记出来 &ndash;&gt;-->
+	<!--<select id="getPermissionPlanUserAuthorizeDeptTree" parameterType="map" resultType="com.hdvon.nmp.vo.DepartmentUserTreeVo">-->
+		<!--select DISTINCT(dept.id) as id,dept.name as name,dept.pid as pid,(select name from t_department where id=dept.pid limit 1)as  parentName,0 as isUser,0 AS isCheck from t_user_department_data udd,t_department dept where udd.user_id=#{userId}-->
+		<!--union-->
+		<!--select DISTINCT(CONCAT('U_',`user`.id)) as id,`user`.name as name,ud.dep_id as pid,(select name from t_department where id=ud.dep_id limit 1)as  parentName,1 as isUser, (SELECT IF(COUNT(1)>0,1,0) FROM t_permissionplan_user pu WHERE pu.user_id=user.id AND pu.perssionplan_id = #{permissionplanId}) AS isCheck from t_user_department_data udd,t_user_department ud,t_user user-->
+		 <!--where udd.user_id=#{userId}  and udd.department_id=ud.dep_id and ud.user_id=user.id-->
+		<!--group by id-->
+	<!--</select>-->
+
+	<!-- 查询当前用户可管理部门下关联的用户，并标记出单个系统角色下关联的用户 -->
+	<select id="getSysroleDeptUserTree" parameterType="map" resultType="com.hdvon.nmp.vo.DepartmentUserTreeVo">
+		select DISTINCT(dept.id) as id,dept.name as name,dept.pid as pid,(select name from t_department where id=dept.pid limit 1)as  parentName,0 as isUser,0 AS isCheck,'department' as nodeType from t_user_department_data udd,t_department dept
+		<where>
+			<if test="isAdmin != 1">
+				udd.user_id=#{userId}
+			</if>
+		</where>
+		union
+		select DISTINCT(CONCAT('U_',`user`.id)) as id,`user`.name as name,ud.dep_id as pid,(select name from t_department where id=ud.dep_id limit 1)as  parentName,1 as isUser, (SELECT IF(COUNT(1)>0,1,0) FROM t_user_sysrole us WHERE us.user_id=user.id AND us.role_id = #{sysroleId}) AS isCheck,'user' as nodeType from t_user_department_data udd,t_user_department ud,t_user user
+		 <where>
+			<if test="isAdmin != 1">
+				udd.user_id=#{userId}
+			</if>
+			and udd.department_id=ud.dep_id and ud.user_id=user.id
+		</where> 
+		group by id
+	</select>
+</mapper>

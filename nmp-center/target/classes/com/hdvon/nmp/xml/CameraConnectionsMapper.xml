@@ -1,0 +1,58 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<!DOCTYPE mapper PUBLIC "-//mybatis.org//DTD Mapper 3.0//EN" "http://mybatis.org/dtd/mybatis-3-mapper.dtd">
+<mapper namespace="com.hdvon.nmp.mapper.CameraConnectionsMapper">
+    <resultMap id="BaseResultMap" type="com.hdvon.nmp.vo.CameraConnectionsVo">
+        <id column="id" jdbcType="BIGINT" property="id" />
+        <result column="device_code" jdbcType="VARCHAR"  property="deviceCode" />
+        <result column="monitor_connections" jdbcType="BIGINT"  property="monitorConnections" />
+        <result column="replay_connections" jdbcType="BIGINT"  property="replayConnections" />
+        <result column="download_connections" jdbcType="BIGINT"  property="downloadConnections" />
+    </resultMap>
+
+    <sql id="Customer_Column_List">
+        t.id,t.device_code,t.monitor_connections,t.replay_connections,t.download_connections
+    </sql>
+    
+  	<select id="selectMonitorConnectionsRank" parameterType="int" resultType="java.util.HashMap">
+    	SELECT * FROM(
+			SELECT p.id,d.SBMC as device_name,p.monitor_connections, 
+			CASE 
+			WHEN @prevRank = p.monitor_connections THEN @curRank 
+			WHEN @prevRank := p.monitor_connections THEN @curRank := @curRank + 1
+			END AS rank
+			FROM t_camera_connections p,t_device d,
+			(SELECT @curRank :=0, @prevRank := NULL) r
+			WHERE p.device_code = d.SBBM
+			ORDER BY p.monitor_connections DESC
+		) t WHERE t.rank &lt;= #{rank}
+  	</select>
+  	
+  	<select id="selectReplayConnectionsRank" parameterType="int" resultType="java.util.HashMap">
+    	SELECT * FROM(
+			SELECT p.id,d.SBMC as device_name,p.replay_connections, 
+			CASE 
+			WHEN @prevRank = p.replay_connections THEN @curRank 
+			WHEN @prevRank := p.replay_connections THEN @curRank := @curRank + 1
+			END AS rank
+			FROM t_camera_connections p,t_device d,
+			(SELECT @curRank :=0, @prevRank := NULL) r
+			WHERE p.device_code = d.SBBM
+			ORDER BY p.replay_connections DESC
+		) t WHERE t.rank &lt;= #{rank}
+  	</select>
+  	
+  	<select id="selectDownloadConnectionsRank" parameterType="int" resultType="java.util.HashMap">
+    	SELECT * FROM(
+			SELECT p.id,d.SBMC as device_name,p.download_connections, 
+			CASE 
+			WHEN @prevRank = p.download_connections THEN @curRank 
+			WHEN @prevRank := p.download_connections THEN @curRank := @curRank + 1
+			END AS rank
+			FROM t_camera_connections p,t_device d,
+			(SELECT @curRank :=0, @prevRank := NULL) r
+			WHERE p.device_code = d.SBBM
+			ORDER BY p.download_connections DESC
+		) t WHERE t.rank &lt;= #{rank}
+  	</select>
+
+</mapper>

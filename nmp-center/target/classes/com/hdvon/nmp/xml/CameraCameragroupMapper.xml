@@ -1,0 +1,33 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<!DOCTYPE mapper PUBLIC "-//mybatis.org//DTD Mapper 3.0//EN" "http://mybatis.org/dtd/mybatis-3-mapper.dtd">
+<mapper namespace="com.hdvon.nmp.mapper.CameraCameragroupMapper">
+  <resultMap id="BaseResultMap" type="com.hdvon.nmp.vo.CameraCameragroupVo">
+    <id column="id" jdbcType="VARCHAR" property="id" />
+    <result column="camera_id" jdbcType="VARCHAR"  property="cameraId" />
+    <result column="cameragroup_id" jdbcType="VARCHAR"  property="cameragroupId" />
+    <result column="camera_name" jdbcType="VARCHAR"  property="cameraName" />
+    <result column="camera_code" jdbcType="VARCHAR"  property="cameraCode" />
+    <result column="cameragroup_name" jdbcType="VARCHAR"  property="cameragroupName" />
+    <result column="deviceId" jdbcType="VARCHAR"  property="deviceId" />
+    <result column="sort" jdbcType="INTEGER"  property="sort" />
+  </resultMap>
+
+  <sql id="Customer_Column_List">
+    t.id,t.camera_id,t.cameragroup_id,t.camera_name,t.camera_code,t.sort
+  </sql>
+  <!-- 查询多个分组下所有的摄像机列表 -->
+  <select id="selectCamerasByGroupIds" parameterType="java.util.List" resultMap="BaseResultMap">
+  	select 
+  		<include refid="Customer_Column_List"/>,c.name as cameragroup_name
+  	from
+  	    t_camera_cameragroup t, t_cameragrouop c
+  	where t.cameragroup_id = c.id
+  		<if test="groupIds != null">
+  			<foreach collection="groupIds" item="groupId" index="index"
+	            open=" and c.id in(" close=")" separator=",">
+	            #{groupId}
+	        </foreach>
+  		</if>
+  </select>
+  
+</mapper>

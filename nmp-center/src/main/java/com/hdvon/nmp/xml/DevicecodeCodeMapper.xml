@@ -1,0 +1,20 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<!DOCTYPE mapper PUBLIC "-//mybatis.org//DTD Mapper 3.0//EN" "http://mybatis.org/dtd/mybatis-3-mapper.dtd">
+<mapper namespace="com.hdvon.nmp.mapper.DevicecodeCodeMapper">
+    <resultMap id="BaseResultMap" type="com.hdvon.nmp.vo.DevicecodeCodeVo">
+        <id column="id" jdbcType="VARCHAR" property="id" />
+        <result column="device_code" jdbcType="VARCHAR"  property="deviceCode" />
+        <result column="devicecode_option_id" jdbcType="VARCHAR"  property="devicecodeOptionId" />
+        <result column="status" jdbcType="INTEGER"  property="status" />
+    </resultMap>
+
+    <sql id="Customer_Column_List">
+        t.id,t.device_code,t.devicecode_option_id,t.status
+    </sql>
+
+   <!-- 根据前面指定编码查询最大编码 -->
+    <select id="selectMaxCodeBycode" parameterType="java.lang.String" resultType="java.lang.String">
+       SELECT MAX(device_code)  from t_devicecode_code where device_code like concat(#{baseCode},'%')
+    </select>
+
+</mapper>

@@ -1,0 +1,24 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<!DOCTYPE mapper PUBLIC "-//mybatis.org//DTD Mapper 3.0//EN" "http://mybatis.org/dtd/mybatis-3-mapper.dtd">
+<mapper namespace="com.hdvon.client.mapper.DepartmentMapper">
+
+
+    <select id="findRecord" parameterType="java.lang.String" resultType="com.hdvon.client.entity.Department">
+	   SELECT d.id,name,d.dep_code,d.parent_dep_code from t_user_department AS ud
+	   LEFT JOIN t_department d ON ud.dep_id=d.id where ud.user_id=#{userId} limit 1
+    </select>
+
+
+	<select id="selectGzDepartment" resultType="com.hdvon.client.vo.DepartmentVo">
+	SELECT id,name,dep_code as depCode,pid,parent_dep_code as parentDepCode from t_department where dep_code like '4401%'
+	</select>
+	
+	    	<select id="existProject" parameterType="java.lang.String" resultType="java.lang.Integer">
+    	select count(*) from (select dep.dep_code as depCode from t_department dep,t_project_department prodep where dep.id=prodep.constructor_dep_id
+			and dep.dep_code like CONCAT(#{depCode},'%')
+			union 
+			select dep.dep_code as depCode from t_department dep,t_project_department prodep where dep.id=prodep.builder_dep_id
+			and dep.dep_code like CONCAT(#{depCode},'%')
+			group by depCode) a
+    	</select>
+</mapper>

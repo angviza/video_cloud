@@ -1,0 +1,470 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<!DOCTYPE mapper PUBLIC "-//mybatis.org//DTD Mapper 3.0//EN" "http://mybatis.org/dtd/mybatis-3-mapper.dtd">
+<mapper namespace="com.hdvon.nmp.mapper.CameraMapper">
+  <resultMap id="BaseResultMap" type="com.hdvon.nmp.vo.CameraVo">
+    <id column="id" jdbcType="VARCHAR" property="id" />
+    <result column="hots" jdbcType="INTEGER"  property="hots" />
+    <result column="device_id" jdbcType="VARCHAR"  property="deviceId" />
+    <result column="access_mode" jdbcType="INTEGER"  property="accessMode" />
+    <result column="registered_name" jdbcType="VARCHAR"  property="registeredName" />
+    <result column="registered_pass" jdbcType="VARCHAR"  property="registeredPass" />
+    <result column="registered_server_port" jdbcType="VARCHAR"  property="registeredServerPort" />
+    <!--<result column="create_time" jdbcType="TIMESTAMP"  property="createTime" />-->
+    <!--<result column="update_time" jdbcType="TIMESTAMP"  property="updateTime" />-->
+    <!--<result column="create_user" jdbcType="VARCHAR"  property="createUser" />-->
+    <!--<result column="update_user" jdbcType="VARCHAR"  property="updateUser" />-->
+  </resultMap>
+  
+  <select id="selectByParam" parameterType="map" resultMap="BaseResultMap">
+      select
+      <include refid="Customer_Column_List"></include>
+      from t_camera t
+      <where>
+	       <if test="deviceId != null and deviceId != ''">
+	        and t.device_id =#{deviceId}
+	      </if>
+      </where>
+   </select>
+
+  <sql id="Customer_Column_List">
+        t.id,t.hots,t.device_id,t.access_mode,t.registered_name,t.registered_pass,t.registered_server_port
+    </sql>
+
+<sql id="Customer_Device_List">
+       t.id,t.hots,t.device_id,t.access_mode,t.registered_name,t.registered_pass,t.registered_server_port,t.SBMC,t.SBBM,t.XZQH,t.ParentID,t.Parental,t.buss_group_id,t.SBCS,t.SXJLX,t.QDSBXH,t.SBSX,t.SXJGNLX,t.BGSX,t.ZNFX,t.CJDLB,t.LXCCWZ,t.CCTGYYSBM,t.CCTGYYSMC,t.CCTGYYSJFDZ,t.LXCCSBIP,t.LXCCSBGBID,t.LXCCSBMC,t.LXCCSDLYHM,t.LXCCSBDLMM,t.LXCCSBDKH,t.LXCCSBZTDS,t.CCXTTDH,t.LXCCSBCJ,t.LXCCSBLX,t.Block,t.AZDZ,t.MPDZ,t.LGBH,t.ZBBZ,t.JD,t.WD,t.WZLX,t.AZFS,t.GG,t.BC,t.HBFX,t.QDFS,t.SYMS,t.JKFWJT,t.JKSJ,t.SNWSX,t.SXJJKFW,t.GLSXJ,t.SFGG,t.SafetyWay,t.RegisterWay,t.Secrecy,t.CertNum,t.Certifiable,t.ErrCode,t.EndTime,t.LWSX,t.JRWL,t.IPv4,t.IPv6,t.MacAddress,t.Port,t.SBYHM,t.Password,t.GATEWAYIP,t.GATEWAYDOMAIN,t.GATEWAYID,t.OSLOGINNAME,t.OSLOGINKEY,t.QYSJ,t.BFSJ,t.AZSJ,t.SBZT,t.SPDS,t.SCSZ,t.SPMH,t.LDYC,t.SPGR,t.SPKD,t.SPZD,t.CJBG,t.ZXSC,t.LXSC,t.XLSY,t.SPLSY,t.GJZSY,t.LXBCTS,t.DownloadSpeed,t.Filepath,t.RecordAddress,t.SVCSpaceSupportMode,t.SVCTimeSupportMode,t.VideoEncodeType,t.Resolution,t.FrameRate,t.VideoCodeType,t.VideoCodeRate,t.StreamType,t.Pickup,t.AudioEncodeType,t.AudioCodeRate,t.AudioSampleRate,t.JKDWLX,t.JSLX,t.TZDW,t.JSDW,t.JSDWDM,t.SSXMBH,t.SSXMMC,t.SXJSSBM,t.SSPCS,t.SSJD,t.CJDW,t.WHDW,t.WHR,t.WHRSJ,t.XGR,t.XGSJ
+    </sql>
+    
+    <resultMap id="selectByMapPageMap" type="com.hdvon.nmp.vo.CameraVo">
+        <id column="id"  property="id" />
+        <id column="deviceId" property="deviceId" />
+        <id column="SBMC" property="sbmc" />
+        <id column="SBBM" property="sbbm" />
+        <id column="SXJLX" property="sxjlx" />
+        <id column="SBZT" property="sbzt" />
+        <id column="AZDZ" property="azdz" />
+        <id column="address_id" property="addressId" />
+        <id column="encoder_server_id"  property="encoderServerId" />
+        <id column="project_id"  property="projectId" />
+        <id column="org_id"  property="orgId" />
+        <id column="cameragroupId" property="cameraGroupId" />
+        <id column="encodeServerName" property="encodeServerName" />
+        <id column="addressName" property="addressName"/>
+        <id column="JSDW" property="jsdw" />
+        <id column="CJDW" property="cjdw" />
+        <id column="zczt_count" property="zcztCount" />
+
+    </resultMap>
+
+   <sql id="selectParam">
+        <if test="sbbm != null and sbbm != ''">
+	       and de.sbbm like concat('%',#{sbbm},'%')
+	    </if>
+	    <if test="sbmc != null and sbmc != ''">
+	       and de.sbmc like concat('%',#{sbmc},'%')
+	    </if>
+	    <if test="jsdw != null and jsdw != ''">
+	       and de.jsdw = #{jsdw}
+	    </if>
+	    <if test="cjdw != null and cjdw != ''">
+	       and de.cjdw = #{cjdw}
+	    </if>
+	    <if test="sbcs != null">
+	       and de.sbcs=#{sbcs}
+	    </if>
+	    <if test="sxjlx != null">
+	       and de.sxjlx=#{sxjlx}
+	    </if>
+	    <if test="bgsx != null">
+	       and de.bgsx=#{bgsx}
+	    </if>
+	    <if test="wzlx != null">
+	       and de.wzlx=#{wzlx}
+	    </if>
+	    <if test="sxjssbm != null">
+	       and de.sxjssbm=#{sxjssbm}
+	    </if>
+	    <if test="cameraIp != null and cameraIp != ''" >
+	       and de.ipv4 like concat('%',#{cameraIp},'%')
+	    </if>
+	    <if test="jd != null  and jd != ''">
+	       and de.jd like concat('%',#{jd},'%')
+	    </if>
+	    <if test="sbzt != null">
+	       and de.sbzt=#{sbzt}
+	    </if>
+	    <if test="sxjgnlx != null">
+	       and de.sxjgnlx=#{sxjgnlx}
+	    </if>
+ 	    <if test="sxjzt != null">
+	       and de.sbzt = #{sxjzt}
+	    </if>
+	    <if test="cjdlb != null">
+	       and de.cjdlb = #{cjdlb}
+	    </if>
+   </sql>
+ 	<!-- 分页查询编码器下关联的摄像机-->
+    <select id="queryCamerasByEncodeId" parameterType = "java.lang.String" resultType="com.hdvon.nmp.vo.CameraVo">
+        select
+        c.id,c.name,c.camera_ip,c.latitude,c.longitude,c.hots,c.device_id,c.access_mode,c.create_time,c.update_time,c.create_user,c.update_user,es.id as encode_id
+        from
+        t_camera c, t_camera_mapping cm
+        where
+        c.id = cm.camera_id
+        and cm.encoder_server_id = #{encodeId}
+    </select>
+
+    <!-- 分页查询摄像机 -->
+    <select id="selectCameraByMapPage" parameterType="com.hdvon.nmp.vo.CameraParamVo" resultMap="selectByMapPageMap">
+       SELECT
+		 ca.id ,de.id as deviceId,de.SBMC,de.SXJLX,de.SBZT,de.SBBM,de.JSDW,de.CJDW,de.AZDZ,
+		 cm.address_id,cm.encoder_server_id,cm.project_id,cm.org_id,es.name as encodeServerName,a.name as addressName
+		<!-- (select es.`name` From t_encoder_server es where cm.encoder_server_id=es.id) AS encodeServerName,
+		(select a.`name` From t_address a where cm.address_id=a.id) AS addressName 
+		 ,(select count(*) From t_device where t_device.SBZT=1 ) AS zczt_count -->
+	  FROM
+		t_device de ,t_camera ca
+		LEFT join t_camera_mapping cm ON ca.id=cm.camera_id
+    	LEFT JOIN t_encoder_server es on cm.encoder_server_id=es.id
+		LEFT JOIN t_address a ON cm.address_id=a.id
+		where de.id = ca.device_id
+		
+	    <include refid="selectParam"></include>
+	    <!-- <if test="addressId != null and addressId !=''">
+	       and cm.address_id=#{addressId}
+	    </if> -->
+	    <if test="addressNodeIds != null and addressNodeIds.size() > 0">
+	    	and cm.address_id in
+            <foreach collection="addressNodeIds" item="item" open="(" close=")"  separator=",">
+                #{item}
+            </foreach>
+	    </if>
+	    <if test="encoderServerId != null and encoderServerId !=''">
+	       and cm.encoder_server_id=#{encoderServerId}
+	    </if>
+	    <!-- <if test="projectId != null and projectId !=''">
+	       and cm.project_id=#{projectId}
+	    </if> -->
+	    <if test="projectNodeIds != null and projectNodeIds.size() > 0">
+	    	and cm.project_id in
+            <foreach collection="projectNodeIds" item="item" open="(" close=")"  separator=",">
+                #{item}
+            </foreach>
+	    </if>
+	    <!-- <if test="orgId != null and orgId !=''">
+	       and cm.org_id=#{orgId}
+	    </if> -->
+	    <if test="orgNodeIds != null and orgNodeIds.size() > 0">
+	    	and cm.org_id in
+            <foreach collection="orgNodeIds" item="item" open="(" close=")"  separator=",">
+                #{item}
+            </foreach>
+	    </if>
+	    <!-- <if test="cameraGroupId != null and cameraGroupId !=''">
+	       and ca.id in (SELECT ccg.camera_id from t_camera_cameragroup ccg where ca.id=ccg.camera_id and ccg.cameragroup_id=#{cameraGroupId} )
+	    </if> -->
+	    <if test="groupNodeIds != null and groupNodeIds.size() > 0">
+	    	and ca.id in
+	    	(SELECT 
+	    			ccg.camera_id 
+	    		from 
+	    			t_camera_cameragroup ccg 
+	    		where 
+	    			ca.id=ccg.camera_id 
+	    			and ccg.cameragroup_id in 
+	    			 <foreach collection="groupNodeIds" item="item" open="(" close=")"  separator=",">
+		                #{item}
+		            </foreach>)
+           
+	    </if>
+        <if test="sbbmList != null and sbbmList.size() > 0">
+            and de.sbbm in
+            <foreach collection="sbbmList" item="item" open="(" close=")"  separator=",">
+                #{item}
+            </foreach>
+        </if>
+	    ORDER BY ca.create_time DESC
+    </select>
+    <!-- 查询轮询预案下关联的摄像机列表 -->
+	<select id="selectCamerasByPollingId" parameterType="java.lang.String" resultType="com.hdvon.nmp.vo.CameraVo">
+		select
+			t.id,t.hots,t.device_id as deviceId,t.access_mode as accessMode,d.sbmc,d.sbbm
+		from
+		t_camera t,t_device d,t_pollingplan_camera pc
+		where pc.camera_id = t.id
+			and d.id=t.device_id
+			and pc.pollingplan_id = #{pollingId}
+	</select>
+
+	<!-- 查询上墙预案下单个通道的摄像机列表 -->
+	<select id="selectCamerasInWallChannel" parameterType = "map" resultType = "com.hdvon.nmp.vo.CameraVo">
+			
+		SELECT 
+			camera.*,address.`address_id` as addressId,address.`name` AS addressName,cp.name as groupName
+		FROM (SELECT
+					t.id,t.hots,t.device_id AS deviceId,d.`SBMC`,d.`SBBM`,d.sxjlx,t.access_mode AS accessMode,wc.matrixchannel_id AS matrixchannelId,wc.cameragroup_id as cameragroupId,wc.sort
+				FROM
+					t_camera t,t_device d,t_wallplan_camera wc
+				WHERE
+					wc.camera_id = t.id
+					AND d.id=t.device_id
+					AND wc.wallplan_id = #{wallplanId}
+					<if test="channelId != null and channelId != ''">
+						AND wc.matrixchannel_id = #{channelId}
+					</if>
+					) camera
+		LEFT JOIN 
+				(SELECT cm.camera_id,cm.address_id,a.name FROM t_address a,t_camera_mapping cm
+		 			WHERE a.id = cm.`address_id`) address
+			ON address.camera_id = camera.id
+		LEFT JOIN 
+			t_cameragrouop cp
+		ON cp.id = camera.cameraGroupId
+		order by camera.sort	
+	</select>
+	<!-- 查询轮询预案下所有的摄像机列表 -->
+	<select id="selectCamerasInPollingPlan" parameterType="map" resultType="com.hdvon.nmp.vo.CameraVo">
+		SELECT pollingcamera.*,cp.name AS groupName FROM (SELECT
+				DISTINCT t.id,t.hots,t.device_id AS deviceId,t.access_mode AS accessMode, d.sbmc,d.sbbm,d.IPv4 AS cameraIp,d.sxjlx,a.name AS addressName,pc.`cameragroup_id` as cameraGroupId,pc.sort as planSort
+			FROM
+				t_camera t,t_device d,t_pollingplan_camera pc,t_camera_mapping cm,t_address a
+			WHERE
+				pc.camera_id = t.id
+				AND d.id=t.device_id
+				AND cm.camera_id = t.id
+				AND cm.address_id = a.id
+				AND pc.pollingplan_id =  #{pollingplanId}
+			) pollingcamera
+		LEFT JOIN 
+			t_cameragrouop cp
+		ON cp.id = pollingcamera.cameraGroupId
+		
+		order by pollingcamera.planSort asc
+    </select>
+
+	<!-- 查看用户是否拥有某个操作权限 -->
+	<select id="selectUserCameraPermission" parameterType="map" resultType="com.hdvon.nmp.vo.sip.UserDeviceParamVo">
+	  SELECT device.SBBM as deviceCode ,rcp.permission_value as permissionVlaue 
+      FROM t_camera camera ,t_device device ,t_resourcerole_camera_permission rcp,t_user AS u ,t_user_resourcerole AS ur ,t_resourcerole AS r
+      where device.id=camera.device_id and camera.id=rcp.camera_id and u.id=ur.user_id and ur.resourcerole_id = r.id 
+	  <if test="userId !=null and userId !=''">
+	     and u.id=#{userId}
+	  </if>
+	  <if test="deviceCode !=null and deviceCode !=''">
+	     and device.SBBM=#{deviceCode}
+	  </if>
+	  <if test="cameraId !=null and cameraId !=''">
+	     and camera.id=#{cameraId}
+	  </if>
+	</select>
+	
+	 <!-- 查询设备注册需要的参数 -->
+	<select id="selectCameraRegisteredParam" parameterType="java.lang.String" resultType="com.hdvon.nmp.vo.sip.CameraRegisteredParamVo">
+		SELECT c.registered_server_port as registeredServerPort ,
+		d.SBBM as deviceCode,d.SBMC as deviceName,d.GATEWAYIP as gatewayip,d.GATEWAYDOMAIN as gatewaydomain,d.GATEWAYID as gatewayid
+		FROM t_camera c ,t_device d  where c.device_id =d.id and d.SBBM=#{deviceCode}
+	</select>
+
+    <select id="seletCameraInfo" parameterType="java.lang.String" resultMap="BaseResultMap">
+        SELECT c.id as id FROM t_camera AS c , t_device AS d WHERE c.device_id = d.id AND d.SBBM=#{deviceCode}
+    </select>
+
+
+
+    <!--基础摄像机-->
+    <resultMap id="CameraNodeMap" type="com.hdvon.nmp.vo.CameraNode">
+        <id column="id" jdbcType="VARCHAR" property="id" />
+        <result column="name" jdbcType="VARCHAR"  property="name" />
+        <result column="cameraId" jdbcType="VARCHAR"  property="cameraId" />
+        <result column="deviceId" jdbcType="VARCHAR"  property="deviceId" />
+        <result column="deviceCode" jdbcType="VARCHAR"  property="deviceCode" />
+        <result column="jd" jdbcType="DOUBLE"  property="jd" />
+        <result column="wd" jdbcType="DOUBLE"  property="wd" />
+        <result column="deviceType" jdbcType="INTEGER"  property="deviceType" />
+    </resultMap>
+
+    <!--摄像机基础对象查询-->
+    <select id="selectCameraNode" parameterType="map" resultMap="CameraNodeMap">
+        SELECT
+        camera.`id` AS `id`,
+        device.SBMC AS `name`,
+        camera.`id` AS cameraId,
+        device.id AS deviceId,
+        device.SBBM AS deviceCode,
+        device.JD AS jd,
+        device.WD AS wd,
+        device.SXJLX AS deviceType
+        FROM
+        t_device device,
+        t_camera camera
+        <where>
+            AND device.id = camera.device_id
+            <!--状态服务器已关联摄像机-->
+            <if test="statusServerId != null">
+                AND camera.id IN
+                (
+                  SELECT sc.camera_id
+                  FROM t_statusserver_camera sc
+                  <where>
+                      AND sc.statusserver_id = #{statusServerId}
+                  </where>
+                )
+            </if>
+            <!--存储服务器已关联摄像机-->
+            <if test="storeServerId != null">
+                AND camera.id IN
+                (
+                  SELECT t.`camera_id` FROM t_storeserver_camera t
+                  <where>
+                    t.`storeserver_id` = #{storeServerId}
+                  </where>
+                )
+            </if>
+            <!--自定义分组已关联摄像机-->
+            <if test="cameragroupId !=null and cameragroupId !='' ">
+                AND camera.id IN(
+                  SELECT t.`camera_id`  FROM t_camera_cameragroup t WHERE t.`cameragroup_id` = #{cameragroupId}
+                )
+            </if>
+            <!--上墙预案已关联摄像机-->
+            <if test="wallplanId !=null and channelId !='' ">
+                AND camera.id IN(
+                    SELECT t.`camera_id` FROM t_wallplan_camera t
+                    WHERE t.wallplan_id = #{wallplanId}
+                    AND t.matrixchannel_id = #{channelId}
+                )
+            </if>
+            <!--轮巡预案已关联摄像机-->
+            <if test="pollingplanId != null and pollingplanId != ''">
+                AND camera.id IN (
+                SELECT pc.`camera_id` FROM `t_pollingplan_camera` pc WHERE pc.`pollingplan_id` = #{pollingplanId}
+                <if test="pollingType != null and pollingplanId != ''">
+                    and pc.`type` = #{pollingType}
+                </if>
+                )
+            </if>
+            <!--非管理员过滤摄像机权限-->
+            <if test="!isAdmin and userId != null">
+                AND camera.id in (
+                    SELECT cp.`camera_id`
+                    FROM `t_resourcerole_camera_permission` cp,`t_user_resourcerole` ur
+                    <where>
+                        AND ur.`resourcerole_id` = cp.`resoucerole_id`
+                        AND ur.`user_id` = #{userId}
+                    </where>
+                )
+            </if>
+            <if test="planId != null and planId != ''">
+                <if test="planType == 'polling'">
+                    and camera.id in (
+                      select camera_id from t_pollingplan_camera where pollingplan_id = #{planId}
+                    )
+                </if>
+                <if test="planType == 'ball'">
+                    and camera.id in (
+                      select camera_id from t_ball_plan where id = #{planId}
+                    )
+                </if>
+                <if test="planType == 'wall'">
+                    and camera.id in (
+                      select camera_id from t_wallplan_camera where wallplan_id =#{planId}
+                    )
+                </if>
+            </if>
+            <!--已关联业务分组的摄像机-->
+            <if test="bussGroupId !=null">
+                AND device.buss_group_id = #{bussGroupId}
+            </if>
+        </where>
+    </select>
+
+    <!--查询已经授权的摄像机id列表-->
+    <select id="selectAuthCameraIds" parameterType="map" resultType="String">
+        SELECT
+        camera.`id` AS `id`
+        FROM
+        t_device device,
+        t_camera camera
+        <where>
+            AND device.id = camera.device_id
+            <if test="!isAdmin and userId != null">
+                AND camera.id in (
+                SELECT cp.`camera_id`
+                FROM `t_resourcerole_camera_permission` cp,`t_user_resourcerole` ur
+                <where>
+                    AND ur.`resourcerole_id` = cp.`resoucerole_id`
+                    AND ur.`user_id` = #{userId}
+                </where>
+                )
+            </if>
+        </where>
+    </select>
+    
+    <!-- 查询摄像机  -->
+    <select id = "selectCameraByParam" parameterType="map" resultType="com.hdvon.nmp.vo.CameraVo">
+        SELECT
+            t.id,
+            t.hots,
+            t.device_id AS deviceId,
+            t.access_mode AS accessMode,
+            d.sbmc,
+            d.sbbm,
+            d.IPv4 AS cameraIp,
+            d.sxjlx,
+            a.name AS addressName
+        FROM
+            t_device d,
+            t_camera t
+            LEFT JOIN t_camera_mapping cm
+            ON cm.camera_id = t.id
+            LEFT JOIN t_address a
+            ON cm.address_id = a.id
+        <where>
+            and t.device_id = d.id
+            <if test="sbbm != null and sbbm != ''">
+                and d.sbbm = #{sbbm}
+            </if>
+            <if test="sbbmList != null and sbbmList.size()>0">
+                <foreach collection="sbbmList" item="item" open=" and d.sbbm in (" close=")"  separator=",">
+                    #{item}
+                </foreach>
+            </if>
+            <if test="ids != null and ids.size()>0">
+                <foreach collection="ids" item="item" open=" and t.id in (" close=")"  separator=",">
+                    #{item}
+                </foreach>
+            </if>
+        </where>
+    </select>
+
+	<!-- 查询轮巡预案关联自定义分组中的摄像机 -->
+	<select id="selectCamerasInGroups" parameterType="java.util.List" resultMap="selectByMapPageMap">
+		select
+			t.id,c.id as cameraGroupId
+		from
+			t_camera t, t_device d, t_cameragrouop c, t_camera_cameragroup cc
+		where
+			t.device_id = d.id
+			and t.id = cc.camera_id
+			and cc.cameragroup_id = c.id
+			<if test="groupIds != null ">
+	            <foreach collection="groupIds" item="item" open=" and c.id in (" close=")"  separator=",">
+	                #{item}
+	            </foreach>
+	        </if>
+	</select>
+	
+	<!-- 获取device集合 -->
+	<select id="selectDeviceIdByCamearId"  parameterType="map" resultType="String">
+	   SELECT d.id from t_camera c,t_device d where c.device_id= d.id 
+	   <if test="cameraIds != null  and cameraIds.size()>0">
+	            <foreach collection="cameraIds" item="item" open="  and c.id in (" close=")"  separator=",">
+	                #{item}
+	            </foreach>
+	        </if>
+	</select>
+	
+		<!-- 根据设备编码获取摄像机信息-->
+	<select id="findCameraByDeviceCode" parameterType="java.lang.String" resultMap="selectByMapPageMap">
+		select c.* from t_camera c,t_device d where d.SBBM=#{deviceCode} and c.device_id=d.id
+	</select>
+</mapper>

@@ -1,0 +1,49 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<!DOCTYPE mapper PUBLIC "-//mybatis.org//DTD Mapper 3.0//EN" "http://mybatis.org/dtd/mybatis-3-mapper.dtd">
+<mapper namespace="com.hdvon.nmp.mapper.ProjectDepartmentMapper">
+  <resultMap id="BaseResultMap" type="com.hdvon.nmp.vo.ProjectDepartmentVo">
+    <id column="id" jdbcType="VARCHAR" property="id" />
+    <result column="project_id" jdbcType="VARCHAR"  property="projectId" />
+    <result column="constructor_dep_id" jdbcType="VARCHAR"  property="constructorDepId" />
+    <result column="builder_dep_id" jdbcType="VARCHAR"  property="builderDepId" />
+  </resultMap>
+
+  <sql id="Customer_Column_List">
+    t.id,t.project_id,t.constructor_dep_id,t.builder_dep_id
+  </sql>
+
+    <select id="selectTopProject" resultType="com.hdvon.nmp.vo.OrganizationTreeVo">
+	    select dep.id as id,dep.name as name,dep.pid as pid,dep.dep_code as depCode,0 as isProject 
+	 		from (select DISTINCT(substring_index(dep.dep_code_split,'-', 1)) as depCode from t_project project, t_project_department prodep,t_department dep
+		where project.id= prodep.project_id and dep.id=prodep.constructor_dep_id
+		union
+		select DISTINCT(substring_index(dep.dep_code_split,'-', 1)) as depCode from t_project project, t_project_department prodep,t_department dep
+		where project.id= prodep.project_id and dep.id=prodep.builder_dep_id
+			group by depCode) a,t_department dep where dep.dep_code=a.depCode
+    </select>
+    
+    
+      <select id="selectChildProject" parameterType="java.lang.String" resultType="com.hdvon.nmp.vo.OrganizationTreeVo">
+	select dep.id as id,dep.name as name,dep.pid as pid,dep.dep_code as depCode,0 as isProject
+		from t_department dep  where dep.pid=#{pid}
+	union 
+	select dep.id as id,dep.name as name,dep.pid as pid,dep.dep_code as depCode,1 as isProject
+	 from t_project project, t_project_department prodep,t_department dep 
+	where project.id= prodep.project_id and dep.id=prodep.constructor_dep_id and dep.id=#{pid}
+	union 
+	select dep.id as id,dep.name as name,dep.pid as pid,dep.dep_code as depCode,1 as isProject
+	 from t_project project, t_project_department prodep,t_department dep 
+	where project.id= prodep.project_id and dep.id=prodep.builder_dep_id and dep.id=#{pid}
+	group by id
+    </select>
+    
+    
+   <select id="existProject" parameterType="java.lang.String" resultType="java.lang.Integer">
+    	select count(*) from (select dep.dep_code as depCode from t_department dep,t_project_department prodep where dep.id=prodep.constructor_dep_id
+			and dep.dep_code like CONCAT(#{depCode},'%')
+			union 
+			select dep.dep_code as depCode from t_department dep,t_project_department prodep where dep.id=prodep.builder_dep_id
+			and dep.dep_code like CONCAT(#{depCode},'%')
+			group by depCode) a
+    	</select>
+</mapper>

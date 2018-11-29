@@ -1,0 +1,39 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<!DOCTYPE mapper PUBLIC "-//mybatis.org//DTD Mapper 3.0//EN" "http://mybatis.org/dtd/mybatis-3-mapper.dtd">
+<mapper namespace="com.hdvon.nmp.mapper.ResourceroleCameraPermissionMapper">
+    <resultMap id="BaseResultMap" type="com.hdvon.nmp.vo.ResourceroleCameraPermissionVo">
+        <id column="id" jdbcType="VARCHAR" property="id" />
+        <result column="resoucerole_id" jdbcType="VARCHAR"  property="resouceroleId" />
+        <result column="camera_id" jdbcType="VARCHAR"  property="cameraId" />
+        <result column="permission_value" jdbcType="VARCHAR"  property="permissionValue" />
+        <result column="device_id" jdbcType="VARCHAR"  property="deviceId" />
+        <result column="device_code" jdbcType="VARCHAR"  property="deviceCode" />
+        <result column="name" jdbcType="VARCHAR"  property="name" />
+    </resultMap>
+
+    <sql id="Customer_Column_List">
+        t.id,t.resoucerole_id,t.camera_id,t.permission_value
+    </sql>
+
+    <select id="selectCameraPermission" resultMap="BaseResultMap"  parameterType="map">
+        SELECT
+        cp.`id` AS `id`,
+        device.`SBMC` AS `name`,
+        cp.`camera_id` AS `camera_id`,
+        cp.`permission_value` AS `permission_value`,
+        device.`id` AS `device_id`,
+        device.`SBBM` AS `device_code`
+        FROM
+        `t_resourcerole_camera_permission` cp,
+        `t_camera` camera,
+        `t_device` device
+        <where>
+            AND cp.`camera_id` = camera.`id`
+            AND camera.`device_id` = device.`id`
+            <if test="resourceroleId != null">
+                AND cp.`resoucerole_id` = #{resourceroleId}
+            </if>
+        </where>
+    </select>
+
+</mapper>

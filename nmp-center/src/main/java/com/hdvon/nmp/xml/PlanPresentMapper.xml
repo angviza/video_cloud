@@ -1,0 +1,35 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<!DOCTYPE mapper PUBLIC "-//mybatis.org//DTD Mapper 3.0//EN" "http://mybatis.org/dtd/mybatis-3-mapper.dtd">
+<mapper namespace="com.hdvon.nmp.mapper.PlanPresentMapper">
+    <resultMap id="BaseResultMap" type="com.hdvon.nmp.vo.PlanPresentVo">
+        <id column="id" jdbcType="VARCHAR" property="id" />
+        <result column="plan_id" jdbcType="VARCHAR"  property="planId" />
+        <result column="present_id" jdbcType="VARCHAR"  property="presentId" />
+        <result column="time_interval" jdbcType="INTEGER"  property="timeInterval" />
+        <result column="sort" jdbcType="INTEGER"  property="sort" />
+    </resultMap>
+
+    <sql id="Customer_Column_List">
+        t.id,t.plan_id,t.present_id,t.time_interval,t.sort
+    </sql>
+	
+	<select id="selectPollingPlanCameraPresent" parameterType="map" resultType="com.hdvon.nmp.vo.PlanPresentVo">
+		select t_plan_present.* from t_polling_plan, t_pollingplan_camera, t_camera, t_plan_present
+				where 
+					t_plan_present.plan_id = #{planId}
+					AND t_polling_plan.id = t_plan_present.plan_id
+              		AND t_polling_plan.id = t_pollingplan_camera.pollingplan_id 
+					AND t_camera.id = t_pollingplan_camera.camera_id 
+					AND t_pollingplan_camera.camera_id = #{cameraId} 
+	</select>
+	
+	<select id="selectWallPlanCameraPresent" parameterType="map" resultType="com.hdvon.nmp.vo.PlanPresentVo">
+		select t_plan_present.* from t_wall_plan, t_wallplan_camera, t_camera, t_plan_present
+				where 
+					t_plan_present.plan_id = #{planId}
+					AND t_wall_plan.id = t_plan_present.plan_id
+              		AND t_wall_plan.id = t_wallplan_camera.wallplan_id 
+					AND t_camera.id = t_wallplan_camera.camera_id 
+					AND t_wallplan_camera.camera_id = #{cameraId} 
+	</select>
+</mapper>

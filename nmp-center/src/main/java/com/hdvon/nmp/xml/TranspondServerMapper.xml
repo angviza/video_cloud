@@ -1,0 +1,83 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<!DOCTYPE mapper PUBLIC "-//mybatis.org//DTD Mapper 3.0//EN" "http://mybatis.org/dtd/mybatis-3-mapper.dtd">
+<mapper namespace="com.hdvon.nmp.mapper.TranspondServerMapper">
+    <resultMap id="BaseResultMap" type="com.hdvon.nmp.vo.TranspondServerVo">
+        <id column="id" jdbcType="VARCHAR" property="id" />
+        <result column="name" jdbcType="VARCHAR"  property="name" />
+        <result column="code" jdbcType="VARCHAR"  property="code" />
+        <result column="ip" jdbcType="VARCHAR"  property="ip" />
+        <result column="port" jdbcType="INTEGER"  property="port" />
+        <result column="user_name" jdbcType="VARCHAR"  property="userName" />
+        <result column="password" jdbcType="VARCHAR"  property="password" />
+        <result column="register_user" jdbcType="VARCHAR"  property="registerUser" />
+        <result column="register_pass" jdbcType="VARCHAR"  property="registerPass" />
+        <result column="register_ip" jdbcType="VARCHAR"  property="registerIp" />
+        <result column="register_port" jdbcType="INTEGER"  property="registerPort" />
+        <result column="register_domain" jdbcType="VARCHAR"  property="registerDomain" />
+        <result column="address_id" jdbcType="VARCHAR"  property="addressId" />
+        <result column="server_status" jdbcType="INTEGER"  property="serverStatus" />
+        <result column="enabled" jdbcType="INTEGER"  property="enabled" />
+        <result column="description" jdbcType="VARCHAR"  property="description" />
+        <result column="version_no" jdbcType="VARCHAR"  property="versionNo" />
+        <result column="addressId" jdbcType="VARCHAR"  property="addressId" />
+        <result column="addressName" jdbcType="VARCHAR"  property="addressName" />
+        <!--<result column="create_time" jdbcType="TIMESTAMP"  property="createTime" />-->
+        <!--<result column="update_time" jdbcType="TIMESTAMP"  property="updateTime" />-->
+        <!--<result column="create_user" jdbcType="VARCHAR"  property="createUser" />-->
+        <!--<result column="update_user" jdbcType="VARCHAR"  property="updateUser" />-->
+    </resultMap>
+
+    <sql id="Customer_Column_List">
+        t.id,t.name,t.code,t.ip,t.port,t.user_name,t.password,t.register_user,t.register_pass,t.register_ip,t.register_port,t.register_domain,t.address_id,t.server_status,t.enabled,t.description,t.version_no
+    </sql>
+
+ <sql id="Customer_Relate_List">
+        t.id,t.name,t.code,t.ip,t.port,t.user_name,t.password,t.register_user,t.register_pass,t.register_ip,t.register_port,t.register_domain,t.address_id,t.server_status,t.enabled,t.description,t.version_no,a.id as addressId, a.name as addressName
+    </sql>
+    <select id="selectTranspondServerByParam" parameterType="map" resultMap="BaseResultMap">
+    	select 
+    		<include refid="Customer_Relate_List"/>
+    	from 
+    		t_transpond_server t,t_address a
+    	where 
+    		t.address_id = a.id
+    		and t.id = #{id}
+    </select>
+    <select id="selectTranspondServersList" parameterType="map" resultMap="BaseResultMap">
+    	select
+    		<include refid="Customer_Relate_List"/>
+    	from 
+    		t_transpond_server t,t_address a
+    	where
+    		t.address_id = a.id
+            and t.enabled in (0 , 1)
+    		<if test="name != null and name != ''">
+    			and t.name like concat('%',#{name},'%')
+    		</if>
+    		<if test="code != null and code != ''">
+    			and t.code = #{code}
+    		</if>
+    		<if test="ip != null and ip !=''">
+    			and t.ip = #{ip}
+    		</if>
+    		<if test="serverStatus != null and serverStatus != ''">
+    			and t.server_status = #{serverStatus}
+    		</if>
+    		<if test="addrIds != null and addrIds.size() > 0">
+                and t.address_id in
+                 <foreach collection="addrIds" item="item" open="(" close=")"  separator=",">
+	                #{item}
+	            </foreach>
+          	</if>
+    		<if test="enabled != null">
+    			and t.enabled = #{enabled}
+    		</if>
+        order by t.create_time desc
+    </select>
+    
+      <!-- 根据前面指定编码查询最大编码 -->
+    <select id="selectMaxCodeBycode" parameterType="map" resultType="java.lang.String">
+       SELECT MAX(code) from t_transpond_server where code like concat('%',#{code},'%')
+    </select>
+    
+</mapper>

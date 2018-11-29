@@ -1,0 +1,75 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<!DOCTYPE mapper PUBLIC "-//mybatis.org//DTD Mapper 3.0//EN" "http://mybatis.org/dtd/mybatis-3-mapper.dtd">
+<mapper namespace="com.hdvon.nmp.mapper.AddressMapper">
+  <resultMap id="BaseResultMap" type="com.hdvon.nmp.vo.AddressVo">
+    <id column="id" jdbcType="VARCHAR" property="id" />
+    <result column="name" jdbcType="VARCHAR"  property="name" />
+    <result column="orderby" jdbcType="INTEGER"  property="orderby" />
+    <result column="pid" jdbcType="VARCHAR"  property="pid" />
+    <result column="code" jdbcType="VARCHAR"  property="code" />
+    <result column="description" jdbcType="VARCHAR"  property="description" />
+    <result column="create_time" jdbcType="TIMESTAMP"  property="createTime" />
+    <!--<result column="update_time" jdbcType="TIMESTAMP"  property="updateTime" />-->
+    <!--<result column="create_user" jdbcType="VARCHAR"  property="createUser" />-->
+    <!--<result column="update_user" jdbcType="VARCHAR"  property="updateUser" />-->
+    <result column="parentName" jdbcType="VARCHAR"  property="parentName" />
+    <result column="pcode" jdbcType="VARCHAR"  property="pcode" />
+  </resultMap>
+
+  <sql id="Customer_Column_List">
+    t.id,t.name,t.orderby,t.pid,t.code,t.description,t.create_time as createTime,t.update_time as updateTime
+  </sql>
+
+    <select id="selectByParam" parameterType="map" resultMap="BaseResultMap">
+        SELECT
+        <include refid="Customer_Column_List"></include>,(SELECT `name` FROM t_address WHERE id = t.`pid`) parentName,
+        (SELECT `code` FROM t_address WHERE id = t.`pid`) pcode
+        FROM
+        t_address t
+        <where>
+         <if test="addrIds != null and addrIds.size() > 0">
+                and t.id in
+                 <foreach collection="addrIds" item="item" open="(" close=")"  separator=",">
+	                #{item}
+	            </foreach>
+          </if>
+          <if test="pidOrId != null and pidOrId !=''">
+              and (t.pid = #{pidOrId} or t.id = #{pidOrId})
+          </if>
+          <if test="search != null and search != ''">
+              and t.name like concat('%',#{search},'%')
+          </if>
+          <if test="nameList != null and nameList.size() > 0">
+                and t.name in
+                 <foreach collection="nameList" item="item" open="(" close=")"  separator=",">
+	                #{item}
+	            </foreach>
+          </if>
+        </where>
+        order by t.create_time desc
+    </select>
+
+
+     <!-- 地址摄像机树资源授权-->
+    <select id="getAddressTree" resultType="com.hdvon.nmp.vo.AddressVo">
+     SELECT addr.id,addr.`name`,addr.pid,addr.orderby as orderby FROM t_address addr
+    </select>
+    <!-- 查询带有状态的所有地址列表 -->
+    <select id="selectStatusAddressList" parameterType="java.lang.String" resultType="com.hdvon.nmp.vo.AddressVo">
+    	SELECT 
+    		addr.id,addr.`name`,addr.pid,addr.orderby as orderby, 
+    		(SELECT IF(COUNT(1)>0,1,0) FROM t_address a WHERE a.id = addr.id and a.id=#{addr.id}) status
+   		FROM 
+   			t_address addr
+    </select>
+
+    <select id="selectMaxCode" parameterType="map" resultType="java.lang.String">
+          SELECT MAX(t.code) from t_cameragrouop t
+          <where>
+             <if test="pid != null and pid != ''">
+    			t.pid = #{pid}
+    		 </if>
+          </where>
+    </select>
+    
+</mapper>

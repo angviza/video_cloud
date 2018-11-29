@@ -1,0 +1,127 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<!DOCTYPE mapper PUBLIC "-//mybatis.org//DTD Mapper 3.0//EN" "http://mybatis.org/dtd/mybatis-3-mapper.dtd">
+<mapper namespace="com.hdvon.quartz.mapper.UserLogMapper">
+    <resultMap id="BaseResultMap" type="com.hdvon.quartz.entity.UserLog">
+        <id column="id" jdbcType="VARCHAR" property="id" />
+        <result column="name" jdbcType="VARCHAR"  property="name" />
+        <result column="account" jdbcType="VARCHAR"  property="account" />
+        <result column="operation_object" jdbcType="VARCHAR"  property="operationObject" />
+        <result column="type" jdbcType="VARCHAR"  property="type" />
+        <result column="operation_type" jdbcType="VARCHAR"  property="operationType" />
+        <result column="menu_id" jdbcType="VARCHAR"  property="menuId" />
+        <result column="content" jdbcType="LONGVARCHAR"  property="content" />
+        <result column="operation_time" jdbcType="TIMESTAMP"  property="operationTime" />
+        <result column="response_time" jdbcType="BIGINT"  property="responseTime" />
+        <result column="is_sync" jdbcType="VARCHAR"  property="isSync" />
+    </resultMap>
+
+    <sql id="Customer_Column_List">
+        t.id,t.name,t.account,t.operation_object,t.type,t.operation_type,t.menu_id,t.content,t.operation_time,t.response_time
+    </sql>
+    
+    <sql id="hostCamer_log">
+       <if test="name !=null and name !='' ">
+          and device.SBMC like concat('%',#{name},'%')
+        </if>
+        <if test="devieIdList !=null ">
+           <foreach collection="devieIdList" item="deviceId" index="index"
+	            open=" and device.id in(" close=")" separator=",">
+	            #{deviceId}
+	        </foreach>
+        </if>
+        <if test="startDate != null and startDate != ''">
+			and unix_timestamp(ulog.operation_time) &gt;= unix_timestamp(#{startDate})
+		 </if>
+		 <if test="endDate != null and endDate != ''">
+			and unix_timestamp(ulog.operation_time) &lt;= unix_timestamp(#{endDate})
+		 </if>
+         GROUP BY deviceCode ORDER BY hotPoints desc
+   </sql>
+    
+    
+    <!-- 历史访问热点 -->
+   <select id="selectHistoryCamara" parameterType="map" resultType="com.hdvon.quartz.entity.ReportResponseVo">
+      SELECT t1.*,COUNT(t1.deviceCode) as hotPoints from  (
+	   select ulog.operation_object as deviceCode ,device.SBMC as name,camera.id as cameraId
+	   from t_user_log ulog ,t_device  device,t_camera camera where ulog.operation_object = device.SBBM  and device.id=camera.device_id
+	   and DATE_FORMAT(ulog.operation_time,'%Y%m%d%H%i%s') &gt;= DATE_FORMAT(DATE_SUB(NOW(),INTERVAL 1 HOUR),'%Y%m%d%H%i%s') 
+	   and DATE_FORMAT(ulog.operation_time,'%Y%m%d%H%i%s') &lt;= DATE_FORMAT(NOW(),'%Y%m%d%H%i%s')
+	 ) as t1 GROUP BY t1.deviceCode  ORDER BY hotPoints desc 
+   </select>
+   
+  
+  <!-- 用户统计过滤条件 -->
+   <sql id="param_userAnalysis">
+      <if test="startDate != null">
+		<!-- and DATE_FORMAT(t2.operation_time,'%Y%m%d%H%i%s') &gt;= DATE_FORMAT(#{startDate},'%Y%m%d%H%i%s')
+		and DATE_FORMAT(t2.operation_time, '%Y%m%d%H%i%s') &lt; DATE_FORMAT(#{endDate}, '%Y%m%d%H%i%s') -->
+		
+		and t2.operation_time &gt;= DATE_FORMAT(#{startDate},'%Y%m%d%H%i%s')
+		and t2.operation_time &lt; DATE_FORMAT(#{endDate}, '%Y%m%d%H%i%s')
+	  </if>
+   </sql>
+  
+   <!--  统计操作摄像机次数-->
+   <select id="selectUsertCamerTotal" parameterType="map" resultType="com.hdvon.quartz.entity.RepUseranalysis">
+<!--     SELECT t.account,SUM(t.type ='1' or null) as inviteTotal, SUM(t.type ='2' or null) as replayTotal ,
+      SUM(t.type ='3' or null) as downloadTotal, SUM(t.type ='4' or null) as controlTotal
+      FROM (
+		SELECT account,t2.operation_time ,t2.update_time ,t2.type 
+        from t_user_log t2 where t2.type is not null 
+        <include refid="param_userAnalysis"></include>
+	    ) t
+	GROUP BY t.account -->
+	
+	 SELECT `user`.account ,SUM(siplog.method ='play' or null) inviteTotal,SUM(siplog.method ='playback' or null) as replayTotalas, 
+	 SUM(siplog.method  ='download' or null) as downloadTotal, SUM(siplog.method  ='cloud' or null) as controlTotal
+	 from t_sip_log siplog ,t_user `user` where siplog.user_id=`user`.id 
+	 and siplog.req_time &gt;= DATE_FORMAT(#{startDate},'%Y%m%d%H%i%s')
+	 and siplog.req_time &lt; DATE_FORMAT(#{endDate}, '%Y%m%d%H%i%s')
+	 GROUP BY user.account
+	
+   </select>
+
+   
+   <!-- 获取登录时长 使用 TIMESTAMPDIFF 计算两个时间的时间差-->
+   <select id="selectUserOnlineTime" parameterType="map" resultType="com.hdvon.quartz.entity.RepUseranalysis">
+	SELECT t.account ,SUM(t.logtime) as onlineTotal
+    FROM (
+		SELECT u.account ,u.last_login_date,u.last_update_date,  
+		IF(TIMESTAMPDIFF(MINUTE,u.last_login_date,u.last_update_date) > TIMESTAMPDIFF(MINUTE,#{startDate},#{endDate}) ,TIMESTAMPDIFF(MINUTE,#{startDate},#{endDate}),
+					  TIMESTAMPDIFF(MINUTE,u.last_login_date,u.last_update_date)) as logtime
+		from t_user u 
+		where u.last_update_date &gt;= #{startDate}
+		and u.last_update_date  &lt; NOW()
+	) t 
+	GROUP BY t.account
+	
+	<!-- SELECT account,SUM(t.logtime) as onlineTotal FROM (
+		SELECT account,t2.operation_time ,t2.update_time ,t2.token_id ,  
+        IF(TIMESTAMPDIFF(MINUTE,t2.operation_time,t2.update_time) > TIMESTAMPDIFF(MINUTE,#{startDate},#{endDate}) ,TIMESTAMPDIFF(MINUTE,#{startDate},#{endDate}),
+			  TIMESTAMPDIFF(MINUTE,t2.operation_time,t2.update_time)) as logtime
+        from t_user_log t2 
+        where token_id is not null
+        <if test="startDate !=null">
+          and t2.update_time &gt;= DATE_FORMAT(#{startDate},'%Y%m%d%H%i%s')
+        </if>
+        <if test="endDate !=null">
+		   and t2.update_time &lt; DATE_FORMAT(#{endDate}, '%Y%m%d%H%i%s')
+        </if>
+       GROUP BY token_id ,account 
+    )t GROUP BY  t.account -->
+	
+   </select>
+   
+   
+   <!-- 用户获取登录次数 -->
+   <select id="selectUserLoginTotal" parameterType="map" resultType="com.hdvon.quartz.entity.RepUseranalysis">
+	   SELECT t1.account,COUNT(t1.token_id) as loiginTotal FROM 
+		(
+		 SELECT t2.account,t2.token_id from t_user_log t2 where t2.token_id is not null 
+		  <include refid="param_userAnalysis"></include>
+		  GROUP BY token_id ,account 
+		)t1 
+		GROUP BY t1.account
+   </select>
+  
+</mapper>

@@ -1,0 +1,568 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<!DOCTYPE mapper PUBLIC "-//mybatis.org//DTD Mapper 3.0//EN" "http://mybatis.org/dtd/mybatis-3-mapper.dtd">
+<mapper namespace="com.hdvon.nmp.mapper.TreeNodeMapper">
+    <!--基础树-->
+    <resultMap id="TreeNodeMap" type="com.hdvon.nmp.vo.TreeNode">
+        <id column="id" jdbcType="VARCHAR" property="id" />
+        <result column="name" jdbcType="VARCHAR"  property="name" />
+        <result column="pid" jdbcType="VARCHAR"  property="pid" />
+        <result column="code" jdbcType="VARCHAR"  property="code" />
+        <result column="nodeType" jdbcType="VARCHAR"  property="nodeType" />
+    </resultMap>
+    <!--摄像机树-->
+    <resultMap id="TreeNodeCameraMap" type="com.hdvon.nmp.vo.TreeNodeCamera" extends="TreeNodeMap">
+        <result column="cameraId" jdbcType="VARCHAR"  property="cameraId" />
+        <result column="deviceId" jdbcType="VARCHAR"  property="deviceId" />
+        <result column="deviceType" jdbcType="VARCHAR"  property="deviceType" />
+        <result column="deviceCode" jdbcType="VARCHAR"  property="deviceCode" />
+    </resultMap>
+    <!--用户树-->
+    <resultMap id="TreeNodeUserMap" type="com.hdvon.nmp.vo.TreeNodeUser" extends="TreeNodeMap">
+        <result column="departmentName" jdbcType="VARCHAR"  property="departmentName" />
+        <result column="userLevel" jdbcType="VARCHAR"  property="userLevel" />
+    </resultMap>
+    <!--行政区划树-->
+    <resultMap id="TreeNodeOrgMap" type="com.hdvon.nmp.vo.TreeNodeOrg" extends="TreeNodeMap">
+        <result column="isVirtual" jdbcType="INTEGER"  property="isVirtual" />
+        <result column="splitCode" jdbcType="VARCHAR"  property="splitCode" />
+        <result column="bussGroupId" jdbcType="VARCHAR"  property="bussGroupId" />
+    </resultMap>
+    <!--部门树-->
+    <resultMap id="TreeNodeDepartmentMap" type="com.hdvon.nmp.vo.TreeNodeDepartment" extends="TreeNodeMap">
+        <result column="isConstructor" jdbcType="INTEGER"  property="isConstructor" />
+        <result column="isBuilder" jdbcType="INTEGER"  property="isBuilder" />
+        <result column="splitCode" jdbcType="VARCHAR"  property="splitCode" />
+    </resultMap>
+
+    <!--地址树-->
+    <sql id="address">
+        SELECT
+        addr.id AS `id`,
+        addr.`name` AS `name`,
+        addr.pid AS `pid`,
+        addr.`code` AS `code`,
+        'address' AS `nodeType`
+        <trim prefix=",">
+            <if test="extends == 'camera'" >
+                null AS cameraId, null as deviceId, null as deviceType, null as deviceCode
+            </if>
+        </trim>
+        FROM
+        t_address addr
+        <where>
+            <if test="pid != null and pid != ''">
+                addr.pid = #{pid}
+            </if>
+        </where>
+    </sql>
+
+    <!--行政区划树-->
+    <sql id="organization">
+        SELECT
+        org.`id` AS `id`,
+        org.`name` AS `name`,
+        org.`pid` AS `pid`,
+        org.`org_code` AS `code`,
+        org.`org_code_split` AS `splitCode`,
+        'organization' AS `nodeType`,
+        org.`is_virtual` AS `isVirtual`,
+        org.buss_group_id as bussGroupId
+        FROM
+        t_organization org
+        <where>
+            <if test="pid != null and pid != ''">
+                org.pid = #{pid}
+            </if>
+            <if test="!hasVirtual">
+                org.is_virtual = '0'
+            </if>
+        </where>
+    </sql>
+
+    <!--部门树-->
+    <sql id="department">
+        SELECT
+        department.`id` AS `id`,
+        department.`name` AS `name`,
+        department.`pid` AS `pid`,
+        department.`dep_code` AS `code`,
+        department.`dep_code_split` AS `splitCode`,
+        'department' AS `nodeType`
+        <trim prefix=",">
+            <if test="extends == 'user'" >
+                null AS departmentName,
+                null AS userLevel
+            </if>
+            <if test="extends == 'department'" >
+                department.is_constructor AS isConstructor , department.is_builder AS isBuilder
+            </if>
+        </trim>
+        FROM
+        t_department department
+        <where>
+            <!--管理员一级级返回-->
+            <if test="pid != null and pid != ''">
+                and department.pid = #{pid}
+            </if>
+            <!--<if test="isAdmin">-->
+                <!--<if test="pid != null and pid != ''">-->
+                    <!--and department.pid = #{pid}-->
+                <!--</if>-->
+            <!--</if>-->
+            <!--&lt;!&ndash;-普通用户关联可管理部门，且一次返回&ndash;&gt;-->
+            <!--<if test="!isAdmin">-->
+                <!--<if test="loginUserId != null">-->
+                    <!--and department.id in (-->
+                        <!--SELECT d1.`dep_id` FROM t_user_department d1 WHERE d1.`user_id` = #{loginUserId}-->
+                        <!--UNION ALL-->
+                        <!--SELECT d2.`department_id` FROM t_user_department_data d2 WHERE d2.`user_id` = #{loginUserId}-->
+                    <!--)-->
+                <!--</if>-->
+            <!--</if>-->
+        </where>
+    </sql>
+
+    <!--摄像机-->
+    <sql id="camera">
+        SELECT
+          camera.`id` AS `id`,
+          device.SBMC AS `name`,
+          mapping.address_id AS `pid`,
+          NULL AS `code`,
+          'camera' AS `nodeType`,
+          camera.`id` AS `cameraId`,
+          device.`id` AS `deviceId`,
+          device.`SXJLX` AS `deviceType`,
+          device.`SBBM` AS `deviceCode`
+        FROM
+          t_device device,
+          t_camera camera,
+          t_camera_mapping mapping
+          <where>
+              AND camera.device_id = device.id
+              AND camera.id = mapping.camera_id
+              <if test="pid != null and pid != ''">
+                  AND mapping.address_id = #{pid}
+              </if>
+              <if test="!isAdmin and loginUserId != null">
+                  AND camera.id in (
+                      SELECT t.`camera_id` FROM t_resourcerole_camera_permission t , t_user_resourcerole ur
+                      WHERE t.`resoucerole_id` = ur.`resourcerole_id`
+                      AND ur.`user_id` = #{loginUserId}
+                  )
+              </if>
+              <if test="deviceTypes != null and deviceTypes.size() > 0">
+                  AND device.`SXJLX` in
+                  <foreach collection="deviceTypes" item="item" index="index" open=" (" close=")" separator=",">
+                      #{item}
+                  </foreach>
+              </if>
+              <if test="name != null">
+                  AND device.SBMC like concat('%', #{name}, '%')
+              </if>
+          </where>
+    </sql>
+
+    <!--分组摄像机-->
+    <sql id="groupCamera">
+        SELECT
+        camera.`id` AS `id`,
+        device.SBMC AS `name`,
+        cg.`cameragroup_id` AS `pid`,
+        NULL AS `code`,
+        'camera' AS `nodeType`,
+        camera.`id` AS `cameraId`,
+        device.`id` AS `deviceId`,
+        device.`SXJLX` AS `deviceType`,
+        device.`SBBM` AS `deviceCode`
+        FROM
+        t_device device,
+        t_camera camera,
+        t_camera_cameragroup cg
+        <where>
+            AND camera.device_id = device.id
+            AND cg.`camera_id` = camera.id
+            <if test="pid != null">
+               AND cg.`cameragroup_id` = #{pid}
+            </if>
+            <if test="!isAdmin and loginUserId != null">
+                AND camera.id in (
+                    SELECT t.`camera_id` FROM t_resourcerole_camera_permission t , t_user_resourcerole ur
+                    WHERE t.`resoucerole_id` = ur.`resourcerole_id`
+                    AND ur.`user_id` = #{loginUserId}
+                )
+            </if>
+            <if test="name != null">
+                AND device.SBMC like concat('%', #{name}, '%')
+            </if>
+        </where>
+    </sql>
+
+    <!--用户树-->
+    <sql id="user">
+        SELECT DISTINCT
+            user.id AS `id`,
+            user.`name` AS `name`,
+            department.`id` AS `pid`,
+            NULL AS `code`,
+            NULL AS `splitCode`,
+            'user' AS `nodeType`,
+            department.`name` AS `departmentName`,
+            user.`level` AS `userLevel`
+        FROM
+            t_user `user`,
+            t_user_department ud,
+            t_department department
+        <where>
+            AND user.id = ud.`user_id`
+            AND user.enable in (0,1)
+            AND department.`id` = ud.`dep_id`
+            <if test="pid != null and pid != ''">
+                AND department.id = #{pid}
+            </if>
+            <!---可管理部门-->
+            <if test="!isAdmin and loginUserId != null">
+                and department.id in (
+                    SELECT d1.`dep_id` FROM t_user_department d1 WHERE d1.`user_id` = #{loginUserId}
+                    UNION ALL
+                    SELECT d2.`department_id` FROM t_user_department_data d2 WHERE d2.`user_id` = #{loginUserId}
+                )
+            </if>
+        </where>
+    </sql>
+
+    <!--用户树-->
+    <sql id="sysRoleUser">
+        SELECT DISTINCT
+            user.id AS `id`,
+            user.`name` AS `name`,
+            us.`role_id` AS `pid`,
+            NULL AS `code`,
+            'user' AS `nodeType`,
+            department.`name` AS `departmentName`,
+            user.`level` AS `userLevel`
+        FROM
+          t_user `user`
+            LEFT JOIN t_user_department ud
+              ON user.id = ud.`user_id`
+            LEFT JOIN t_department department
+              ON department.`id` = ud.`dep_id`,
+          t_user_sysrole us
+        <where>
+            AND user.id = us.`user_id`
+            AND user.enable in (0,1)
+            <if test="pid != null and pid != ''">
+                AND us.`role_id` = #{pid}
+            </if>
+            <!---可管理部门-->
+            <if test="!isAdmin and loginUserId != null">
+                and department.id in (
+                    SELECT d1.`dep_id` FROM t_user_department d1 WHERE d1.`user_id` = #{loginUserId}
+                    UNION ALL
+                    SELECT d2.`department_id` FROM t_user_department_data d2 WHERE d2.`user_id` = #{loginUserId}
+                )
+            </if>
+        </where>
+    </sql>
+
+    <!--项目树(包含承建单位和建设单位)-->
+    <sql id="project">
+        SELECT
+          project.`id` AS `id`,
+          project.`name` AS `name`,
+          pde.`constructor_dep_id` AS `pid`,
+          project.`code` AS `code`,
+          NULL AS `splitCode`,
+          'project' AS `nodeType`
+        FROM
+          t_project_department pde,
+          t_project project,
+          t_department department
+        <where>
+          AND project.id = pde.project_id
+          AND pde.constructor_dep_id = department.id
+        </where>
+
+        UNION ALL
+
+        SELECT
+          project.`id` AS `id`,
+          project.`name` AS `name`,
+          pde.`builder_dep_id` AS `pid`,
+          project.`code` AS `code`,
+          NULL AS `splitCode`,
+          'project' AS `nodeType`
+        FROM
+          t_project_department pde,
+          t_project project,
+          t_department department
+        <where>
+          AND project.id = pde.project_id
+          AND pde.builder_dep_id = department.id
+        </where>
+    </sql>
+
+    <!--编码器树-->
+    <sql id="encoder">
+        SELECT
+        encoder.`id` AS `id`,
+        encoder.`name` AS `name`,
+        em.`address_id` AS `pid`,
+        null AS `code`,
+        'encoder' AS `nodeType`
+        FROM
+        t_encoder_server encoder , t_encodeserver_mapping em
+        <where>
+            AND encoder.`id` = em.`encodeserver_id`
+            <if test="pid != null and pid != ''">
+                AND em.`address_id` = #{pid}
+            </if>
+            <if test="name != null">
+                AND encoder.`name` like concat('%', #{name}, '%')
+            </if>
+        </where>
+    </sql>
+
+    <!--自定义分组树-->
+    <sql id="group">
+        SELECT
+          groups.`id` AS `id`,
+          groups.`name` AS `name`,
+          groups.`pid` AS `pid`,
+          groups.`code` AS `code`,
+          'group' AS `nodeType`
+          <trim prefix=",">
+              <if test="extends == 'camera'" >
+                  null AS cameraId, null as deviceId, null as deviceType, null as deviceCode
+              </if>
+          </trim>
+        FROM
+          t_cameragrouop groups
+         <where>
+             <if test="pid != null">
+                 groups.`pid` = #{pid}
+             </if>
+         </where>
+    </sql>
+
+    <!--资源角色树-->
+    <sql id="resRole">
+        SELECT
+          role.`id` AS `id`,
+          role.`name` AS `name`,
+          role.`pid` AS `pid`,
+          '' AS `code`,
+          'resrole' AS `nodeType`
+        FROM
+          t_resourcerole role
+    </sql>
+
+    <!--系统角色树-->
+    <sql id="sysRole">
+        SELECT
+          role.`id` AS `id`,
+          role.`name` AS `name`,
+          role.`pid` AS `pid`,
+          '' AS `code`,
+          'sysrole' AS `nodeType`
+          <trim prefix=",">
+              <if test="extends == 'user'" >
+                  null AS `departmentName`,
+                  null AS userLevel
+              </if>
+          </trim>
+        FROM
+          t_sysrole role
+        <where>
+            <if test="pid != null">
+                AND role.pid = #{pid}
+            </if>
+        </where>
+    </sql>
+	
+	<!-- 子节点 -->
+	<sql id="childNodesByCode">
+		select
+			t.id as id
+		from
+			<if test="type == 'address'">
+					t_address t
+				<where>
+					<if test="code != null and code != ''">
+						t.code like concat(#{code},'%')
+					</if>
+				</where>	
+			</if>
+			<if test="type == 'org'">
+					t_organization t
+				<where>
+					<if test="code != null and code != ''">
+						t.org_code_split like concat(#{code}, '%')
+					</if>
+				</where>
+			</if>
+			<if test="type == 'project'">
+					t_project t
+				<where>
+					<if test="code != null and code != ''">
+						t.code like concat(#{code}, '%')
+					</if>
+				</where>
+			</if>
+			<if test="type == 'group'">
+					t_cameragrouop t
+				<where>
+					<if test="code != null and code != ''">
+						t.code like concat(#{code}, '%')
+					</if>
+				</where>
+			</if>
+			<if test="type == 'department'">
+					t_department t
+				<where>
+					<if test="code != null and code != ''">
+						t.dep_code_split like concat(#{code}, '%')
+					</if>
+				</where>
+			</if>
+	</sql>
+	<!-- 更新子节点编号 -->
+	<sql id="updateChildCodes">
+		<if test="type == 'address'">
+			update 
+				t_address t 
+			set
+				t.code = concat(#{newCode},substr(t.code, length(#{newCode})+1))
+			where
+				t.code like concat(#{oldCode},'%') 
+		</if>
+		<if test="type == 'group'">
+			update
+				t_cameragrouop t
+			set
+				t.code = concat(#{newCode},substr(t.code, length(#{newCode})+1))
+			where
+				t.code like concat(#{oldCode},'%')
+		</if>
+		<if test="type == 'department'">
+			update
+				t_department t
+			set
+				t.dep_code_split = replace(t.dep_code_split, #{oldCode}, #{newCode})
+			where
+				t.dep_code_split like concat(#{oldCode},'%')
+		</if>
+		<if test="type == 'org'">
+			update 
+				t_organization t
+			set 
+				t.org_code_split = replace(t.org_code_split, #{oldCode}, #{newCode})
+			where 
+				t.org_code_split like concat(#{oldCode},'%')
+		</if>
+	</sql>
+    <!-- 查询地址树-->
+    <select id="selectAddressTree" resultMap="TreeNodeMap">
+        <include refid="address" />
+    </select>
+
+    <!--查询地址和摄像机树-->
+    <select id="selectAddressCameraTree" resultMap="TreeNodeCameraMap">
+        <include refid="address" />
+        UNION ALL
+        <include refid="camera" />
+    </select>
+
+    <!--查询分组和摄像机树-->
+    <select id="selectGroupCameraTree" resultMap="TreeNodeCameraMap">
+        <include refid="group" />
+        UNION ALL
+        <include refid="groupCamera" />
+    </select>
+
+    <!--查询编码器树-->
+    <select id="selectAddressEncoderTree" resultMap="TreeNodeMap">
+        <include refid="address" />
+        UNION ALL
+        <include refid="encoder" />
+    </select>
+
+    <!-- 查询部门树-->
+    <select id="selectDepartmentTree" resultMap="TreeNodeDepartmentMap">
+        <include refid="department" />
+    </select>
+
+    <!-- 查询部门用户树-->
+    <select id="selectDepartmentUserTree" resultMap="TreeNodeUserMap">
+        <include refid="department" />
+        UNION ALL
+        <include refid="user" />
+    </select>
+
+    <!-- 查询系统角色用户树-->
+    <select id="selectSysRoleUserTree" resultMap="TreeNodeUserMap">
+        <include refid="sysRole" />
+        UNION ALL
+        <include refid="sysRoleUser" />
+    </select>
+
+    <!-- 查询行政区划树-->
+    <select id="selectOrganizationTree" resultMap="TreeNodeOrgMap">
+        <include refid="organization" />
+    </select>
+
+    <!-- 查询项目树-->
+    <select id="selectProjectTree" resultMap="TreeNodeMap">
+        <include refid="department" />
+        UNION ALL
+        <include refid="project" />
+    </select>
+
+    <!-- 查询自定义分组树-->
+    <select id="selectGroupTree" resultMap="TreeNodeMap">
+        <include refid="group" />
+    </select>
+
+    <!-- 查询资源角色树-->
+    <select id="selectResourceRoleTree" resultMap="TreeNodeMap">
+        <include refid="resRole" />
+    </select>
+
+    <!-- 查询系统角色树-->
+    <select id="selectSysRoleTree" resultMap="TreeNodeMap">
+        <include refid="sysRole" />
+    </select>
+
+	<!-- 根据树节点的编号查询当前节点以及子节点 -->
+	<select id="selectChildNodesByCode" resultMap="TreeNodeMap">
+		<include refid="childNodesByCode" />
+	</select>
+	
+	<!-- 根据部门树节点的编号查询当前部门节点以及子部门节点-->
+	<select id="selectDeptChildNodesByCode" resultMap="TreeNodeDepartmentMap">
+		<include refid="childNodesByCode" />
+	</select>
+
+    <!-- 单独查询查询地址关联的编码器，最多只能搜索500条 -->
+    <select id="selectEncoder" resultMap="TreeNodeMap">
+        <include refid="encoder" />
+        limit 0,500
+    </select>
+
+    <!-- 单独查询地址关联的摄像机，最多只能搜索500条 -->
+    <select id="selectCamera" resultMap="TreeNodeCameraMap">
+        <include refid="camera" />
+        limit 0,500
+    </select>
+
+    <!-- 单独查询分组关联的摄像机，最多只能搜索500条 -->
+    <select id="selectGroupCamera" resultMap="TreeNodeCameraMap">
+        <include refid="groupCamera" />
+        limit 0,500
+    </select>
+	
+	<!-- 修改子节点编号 -->
+	<update id="updateChildNodesCode">
+		<include refid="updateChildCodes"/>
+	</update>
+</mapper>

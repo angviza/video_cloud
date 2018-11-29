@@ -1,0 +1,14 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<!DOCTYPE mapper PUBLIC "-//mybatis.org//DTD Mapper 3.0//EN" "http://mybatis.org/dtd/mybatis-3-mapper.dtd">
+<mapper namespace="com.hdvon.nmp.mapper.PermissionplanUserMapper">
+    <resultMap id="BaseResultMap" type="com.hdvon.nmp.vo.PermissionplanUserVo">
+        <id column="id" jdbcType="VARCHAR" property="id" />
+        <result column="perssionplan_id" jdbcType="VARCHAR"  property="perssionplanId" />
+        <result column="user_id" jdbcType="VARCHAR"  property="userId" />
+    </resultMap>
+
+    <sql id="Customer_Column_List">
+        t.id,t.perssionplan_id,t.user_id
+    </sql>
+
+</mapper>

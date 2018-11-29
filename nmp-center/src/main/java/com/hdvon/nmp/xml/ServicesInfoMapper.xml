@@ -1,0 +1,69 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<!DOCTYPE mapper PUBLIC "-//mybatis.org//DTD Mapper 3.0//EN" "http://mybatis.org/dtd/mybatis-3-mapper.dtd">
+<mapper namespace="com.hdvon.nmp.mapper.ServicesInfoMapper">
+    <resultMap id="BaseResultMap" type="com.hdvon.nmp.vo.ServicesInfoVo">
+        <id column="id" jdbcType="BIGINT" property="id" />
+        <result column="ip_address" jdbcType="VARCHAR"  property="ipAddress" />
+        <result column="port" jdbcType="INTEGER"  property="port" />
+        <result column="name" jdbcType="VARCHAR"  property="name" />
+        <result column="code" jdbcType="VARCHAR"  property="code" />
+        <result column="enabled" jdbcType="INTEGER"  property="enabled" />
+        <result column="server_status" jdbcType="INTEGER"  property="serverStatus" />
+        <result column="user_name" jdbcType="VARCHAR"  property="userName" />
+        <result column="password" jdbcType="VARCHAR"  property="password" />
+        <result column="cpu_use_rate" jdbcType="VARCHAR"  property="cpuUseRate" />
+        <result column="memory_use_rate" jdbcType="VARCHAR"  property="memoryUseRate" />
+        <result column="network_use_rate" jdbcType="VARCHAR"  property="networkUseRate" />
+        <result column="disk_use_rate" jdbcType="VARCHAR"  property="diskUseRate" />
+        <result column="connectivity" jdbcType="VARCHAR"  property="connectivity" />
+        <result column="packet_lost_rate" jdbcType="VARCHAR"  property="packetLostRate" />
+        <result column="average_delay" jdbcType="BIGINT"  property="averageDelay" />
+        <result column="online_status" jdbcType="INTEGER"  property="onlineStatus" />
+        <result column="concurrent_request" jdbcType="BIGINT"  property="concurrentRequest" />
+        <result column="connections" jdbcType="BIGINT"  property="connections" />
+        <result column="request_failure" jdbcType="BIGINT"  property="requestFailure" />
+        <!--<result column="create_time" jdbcType="TIMESTAMP"  property="createTime" />-->
+        <!--<result column="update_time" jdbcType="TIMESTAMP"  property="updateTime" />-->
+        <!--<result column="create_user" jdbcType="VARCHAR"  property="createUser" />-->
+        <!--<result column="update_user" jdbcType="VARCHAR"  property="updateUser" />-->
+    </resultMap>
+
+    <sql id="Customer_Column_List">
+        t.id,t.ip_address,t.port,t.name,t.code,t.enabled,t.server_status,t.user_name,t.password,t.cpu_use_rate,t.memory_use_rate,t.network_use_rate,t.disk_use_rate,t.connectivity,t.packet_lost_rate,t.average_delay,t.online_status,t.concurrent_request,t.connections,t.request_failure
+    </sql>
+    
+    <sql id="servicesRealTime_concat">
+		<if test="currentDate != null and currentDate != ''">
+			AND date_format(info.update_time,'%Y-%m-%d') = #{currentDate}
+		</if>
+		<!-- ORDER BY info.update_time DESC -->
+	</sql>
+    
+    <select id="selectRealtimeServicesInfoList" parameterType="map" resultType="com.hdvon.nmp.vo.ServicesInfoVo">
+    	SELECT info.ip_address AS ipAddress,info.`port`,info.`name`,(SELECT dict.ch_name FROM t_dictionary dict WHERE dict.en_name = info.`code` AND dict.dictionary_type_id = '3963723250118089' GROUP BY dict.ch_name) AS type,
+			(SELECT dict.ch_name FROM t_dictionary dict WHERE dict.`value` = info.online_status AND dict.dictionary_type_id = '3892944330063872' GROUP BY dict.ch_name) AS onlineState,
+			info.cpu_use_rate AS cpuUseRate,info.memory_use_rate AS memoryUseRate,info.network_use_rate AS networkUseRate,info.disk_use_rate AS diskUseRate,info.connectivity,info.packet_lost_rate AS packetLostRate,
+			info.average_delay AS averageDelay,info.concurrent_request AS concurrentRequest,info.connections,info.request_failure AS requestFailure
+		FROM t_services_info info
+		WHERE 1=1
+		<include refid="servicesRealTime_concat"></include>
+  	</select>
+  	
+  	<sql id="systemResource_concat">
+		<if test="startTime != null and startTime != ''">
+			AND unix_timestamp(info.update_time) &gt;= unix_timestamp(#{startTime})
+		</if>
+		<if test="endTime != null and endTime != ''">
+			AND unix_timestamp(info.update_time) &lt;= unix_timestamp(#{endTime})
+		</if>
+	</sql>
+  	
+  	<select id="selectSystemResourceRates" parameterType="map" resultType="java.util.HashMap">
+    	SELECT convert(AVG(info.cpu_use_rate),decimal(10,2)) as avg_cpu_use_rate,convert(AVG(info.memory_use_rate),decimal(10,2)) as avg_memory_use_rate,
+		convert(AVG(info.network_use_rate),decimal(10,2)) as avg_network_use_rate,convert(AVG(info.disk_use_rate),decimal(10,2)) as avg_disk_use_rate   
+		FROM t_services_info info
+		WHERE 1=1
+		<include refid="systemResource_concat"></include>
+  	</select>
+
+</mapper>

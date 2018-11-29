@@ -1,0 +1,172 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<!DOCTYPE mapper PUBLIC "-//mybatis.org//DTD Mapper 3.0//EN" "http://mybatis.org/dtd/mybatis-3-mapper.dtd">
+<mapper namespace="com.hdvon.nmp.mapper.NoticeMapper">
+    <resultMap id="BaseResultMap" type="com.hdvon.nmp.vo.NoticeVo">
+        <id column="id" jdbcType="VARCHAR" property="id" />
+        <result column="theme" jdbcType="VARCHAR"  property="theme" />
+        <result column="notice_type_id" jdbcType="VARCHAR"  property="noticeTypeId" />
+        <result column="content" jdbcType="VARCHAR"  property="content" />
+        <result column="device_tree" jdbcType="VARCHAR"  property="deviceTree" />
+        <result column="device_id" jdbcType="VARCHAR"  property="deviceId" />
+        <result column="device_code" jdbcType="VARCHAR"  property="deviceCode" />
+        <result column="device_name" jdbcType="VARCHAR"  property="deviceName" />
+        <result column="device_port" jdbcType="VARCHAR"  property="devicePort" />
+        <result column="show_method" jdbcType="INTEGER"  property="showMethod" />
+        <result column="time_setting" jdbcType="VARCHAR"  property="timeSetting" />
+        <result column="time_setting_end" jdbcType="VARCHAR"  property="timeSettingEnd" />
+        <result column="create_time" jdbcType="TIMESTAMP"  property="createTime" />
+        <!--<result column="update_time" jdbcType="TIMESTAMP"  property="updateTime" />-->
+        <result column="create_user" jdbcType="VARCHAR"  property="createUser" />
+        <result column="flag" jdbcType="INTEGER"  property="flag" />
+        <result column="count" jdbcType="INTEGER"  property="count" />
+        <!--<result column="update_user" jdbcType="VARCHAR"  property="updateUser" />-->
+    </resultMap>
+
+    <sql id="Customer_Column_List">
+        t.id,t.theme,t.notice_type_id,t.content,t.show_method,t.device_tree,t.device_id,t.device_code,t.device_name,t.device_port,t.time_setting,t.time_setting_end,t.create_user,t.create_time
+    </sql>
+    <!-- 分页查询公告信息(发件箱) -->
+    <select id="selectPublishMessageByParam" parameterType="java.lang.String" resultMap="BaseResultMap">
+        SELECT <include refid="Customer_Column_List" />
+        FROM t_notice t,t_user_notice un
+        <where>
+            t.id = un.notice_id
+            <if test = "createUser != null and createUser != ''">
+                AND  t.create_user = #{createUser}
+            </if>
+            <if test="username != null and username != ''">
+                AND un.user_id in (SELECT u.id FROM t_user u where u.name LIKE concat('%',#{username},'%'))
+            </if>
+            <if test="type != null">
+                AND t.notice_type_id = #{type}
+            </if>
+            <if test = "theme != null and theme != ''">
+                AND t.theme LIKE concat('%',#{theme},'%')
+            </if>
+            GROUP BY t.id
+            order by t.create_time desc
+        </where>
+    </select>
+
+    <!-- 分页查询公告信息(收件箱) -->
+    <select id="selectReceiveMessageByParam" parameterType="java.lang.String" resultMap="BaseResultMap">
+        SELECT <include refid="Customer_Column_List" />,un.flag as flag
+        FROM t_notice t,t_user_notice un
+        <where>
+            t.id = un.notice_id
+            <if test = "userId != null and userId != ''">
+                AND  un.user_Id = #{userId}
+            </if>
+            <if test="username != null and username != ''">
+                AND t.create_user LIKE concat('%',#{username},'%')
+            </if>
+            <if test="type != null">
+                AND t.notice_type_id = #{type}
+            </if>
+            <if test = "theme != null and theme != ''">
+                AND t.theme LIKE concat('%',#{theme},'%')
+            </if>
+            GROUP BY t.id
+            order by t.create_time desc
+        </where>
+    </select>
+
+    <!-- 查询公告详情信息（发件人） -->
+    <select id="queryNoticeByParam" parameterType="java.lang.String" resultMap="BaseResultMap">
+        SELECT <include refid="Customer_Column_List"/>
+        FROM t_notice t
+        <where>
+            <if test="id != null and id != ''">
+                and t.id = #{id}
+            </if>
+            <if test="createUser != null and createUser != ''">
+                and t.create_user = #{createUser}
+            </if>
+        </where>
+    </select>
+
+    <!-- 查询公告详情信息（收件人） -->
+    <select id="queryNoticeByReceive" parameterType="java.lang.String" resultMap="BaseResultMap">
+        SELECT <include refid="Customer_Column_List"/>
+        FROM t_notice t ,t_user_notice un
+        <where>
+            t.id = un.notice_Id
+            <if test="id != null and id != ''">
+                and t.id = #{id}
+            </if>
+            <if test="userId != null and userId != ''">
+                and un.user_Id = #{userId}
+            </if>
+        </where>
+    </select>
+
+    <!-- 公告信息提示列表 -->
+    <select id="queryNoticeByFlag" parameterType="java.lang.String" resultMap="BaseResultMap">
+        SELECT
+        <include refid="Customer_Column_List"/>
+        ,UN.flag as flag
+        FROM t_notice t ,t_user_notice UN
+        <where>
+            t.id =UN.notice_Id
+            <if test="userId != null and userId != ''">
+                and UN.user_Id = #{userId}
+            </if>
+            <if test="type != null">
+                and t.notice_type_id = #{type}
+            </if>
+            <if test="flag != null">
+                and UN.flag = #{flag}
+            </if>
+            GROUP BY t.id
+            order by t.create_time desc
+        </where>
+    </select>
+
+    <!-- 统计当前用户未读信息的总数 -->
+    <select id="queryUnReadTotal" parameterType="java.lang.String" resultType="java.lang.Integer">
+        SELECT COUNT(1) as 'count'
+        FROM t_notice t ,t_user_notice UN
+        <where>
+            t.id =UN.notice_Id
+            <if test="userId != null and userId != ''">
+                and UN.user_Id = #{userId}
+            </if>
+            <if test="flag != null">
+                and UN.flag = #{flag}
+            </if>
+        </where>
+    </select>
+    <!-- 统计当前用户未读信息 -->
+    <select id="queryNoticeUnRead" parameterType="java.lang.String" resultMap="BaseResultMap">
+        SELECT <include refid="Customer_Column_List"/>
+        FROM t_notice t ,t_user_notice UN
+        <where>
+            t.id =UN.notice_Id
+            <if test="userId != null and userId != ''">
+                and UN.user_Id = #{userId}
+            </if>
+            <if test="flag != null">
+                and UN.flag = #{flag}
+            </if>
+            <![CDATA[
+                AND t.time_setting <= NOW()
+            ]]>
+--             AND t.create_time > DATE_ADD(NOW(), INTERVAL -60 MINUTE)
+            ORDER BY t.create_time DESC LIMIT 1
+        </where>
+    </select>
+
+    <!-- 用户登录前的维护公告提醒 -->
+    <select id="queryRemindMessage" parameterType="java.lang.String" resultType="string">
+        SELECT t.content
+        FROM t_notice t
+        <where>
+           t.notice_type_id = 2
+            <![CDATA[
+                AND t.time_setting_end >= NOW()
+                AND t.time_setting <= NOW()
+            ]]>
+           ORDER BY create_time desc LIMIT 1
+        </where>
+    </select>
+</mapper>

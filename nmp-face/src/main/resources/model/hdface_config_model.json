@@ -1,0 +1,15 @@
+{
+  "ModelVersion": 1.0,
+  "Parameters":
+  [
+    {"minFace": 50},
+	{"p_thresh": 0.75},
+	{"r_thresh": 0.85},
+	{"o_thresh": 0.9},
+	{"scale": 0.709},
+    {"net": "det1.net", "params": "det1.params"},
+	{"net": "det2.net", "params": "det2.params"},
+	{"net": "det3.net", "params": "det3.params"},
+	{"net": "face_feature.net", "params": "face_feature.params"}
+  ]
+}

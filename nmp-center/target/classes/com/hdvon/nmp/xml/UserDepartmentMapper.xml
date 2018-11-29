@@ -1,0 +1,25 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<!DOCTYPE mapper PUBLIC "-//mybatis.org//DTD Mapper 3.0//EN" "http://mybatis.org/dtd/mybatis-3-mapper.dtd">
+<mapper namespace="com.hdvon.nmp.mapper.UserDepartmentMapper">
+  <resultMap id="BaseResultMap" type="com.hdvon.nmp.vo.UserDepartmentVo">
+    <id column="id" jdbcType="VARCHAR" property="id" />
+    <result column="user_id" jdbcType="VARCHAR"  property="userId" />
+    <result column="dep_id" jdbcType="VARCHAR"  property="depId" />
+  </resultMap>
+
+  <sql id="Customer_Column_List">
+    t.id,t.user_id,t.dep_id
+  </sql>
+  <!--查询部门是否关联用户-->
+  <select id="selectDepartUser"  resultMap="BaseResultMap" parameterType="map">
+    SELECT <include refid="Customer_Column_List"></include>
+    FROM t_user_department t , t_user u
+    <where>
+     u.id = t.user_id and u.enable in (0,1)
+     and t.`dep_id` in
+      <foreach collection="deptIds" item="item" open="(" close=")"  separator=",">
+        #{item}
+      </foreach>
+    </where>
+  </select>
+</mapper>

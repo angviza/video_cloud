@@ -1,0 +1,50 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<!DOCTYPE mapper PUBLIC "-//mybatis.org//DTD Mapper 3.0//EN" "http://mybatis.org/dtd/mybatis-3-mapper.dtd">
+<mapper namespace="com.hdvon.nmp.mapper.StatusserverCameraMapper">
+    <resultMap id="BaseResultMap" type="com.hdvon.nmp.vo.StatusserverCameraVo">
+        <id column="id" jdbcType="VARCHAR" property="id" />
+        <result column="camera_id" jdbcType="VARCHAR"  property="cameraId" />
+        <result column="statusserver_id" jdbcType="VARCHAR"  property="statusserverId" />
+        <result column="camera_name" jdbcType="VARCHAR"  property="cameraName" />
+        <result column="camera_no" jdbcType="VARCHAR"  property="cameraNo" />
+        <result column="camera_type" jdbcType="INTEGER"  property="cameraType" />
+        <result column="status" jdbcType="INTEGER"  property="status" />
+    </resultMap>
+
+    <sql id="Customer_Column_List">
+        t.id,t.camera_id,t.statusserver_id,t.camera_name,t.camera_no,t.camera_type,t.status
+    </sql>
+
+    <select id="selectUserStatusserverCamera" parameterType="map" resultType="com.hdvon.nmp.vo.StatusserverCameraVo">
+    	SELECT distinct(CONCAT('d_',device.id)) as id,camera.id as cameraId,device.SBMC as cameraName,sc.statusserver_id as statusserverId,device.id as deviceId,
+		device.SBBM as cameraNo,device.SXJLX as cameraType 
+			FROM t_device device ,
+			t_camera  camera,t_camera_mapping cm ,t_status_server ss,t_statusserver_camera sc
+		<where>
+			<if test="statusserverId != null and statusserverId != ''">
+				and sc.statusserver_id = #{statusserverId}
+			</if>
+			<if test="cameraName != null and cameraName != ''">
+				and device.SBMC like concat('%',#{cameraName},'%')
+			</if>
+			<if test="cameraNo != null and cameraNo != ''">
+				and device.SBBM like concat('%',#{cameraNo},'%')
+			</if>
+			<if test="cameraType != null">
+				and device.SXJLX = #{cameraType}
+			</if>
+			<if test="status != null">
+				and sc.status != #{status}
+			</if>
+			<if test="!isAdmin and userId != null">
+				AND camera.id in (
+					SELECT t.`camera_id` FROM t_resourcerole_camera_permission t , t_user_resourcerole ur
+					WHERE t.`resoucerole_id` = ur.`resourcerole_id`
+					AND ur.`user_id` = #{userId}
+				)
+			</if>
+		  and ss.id=sc.statusserver_id and camera.id=sc.camera_id and device.id=camera.device_id and camera.id=cm.camera_id
+		</where>
+    </select>
+
+</mapper>

@@ -1,0 +1,556 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<!DOCTYPE mapper PUBLIC "-//mybatis.org//DTD Mapper 3.0//EN" "http://mybatis.org/dtd/mybatis-3-mapper.dtd">
+<mapper namespace="com.hdvon.nmp.mapper.UserLogMapper">
+  <resultMap id="BaseResultMap" type="com.hdvon.nmp.vo.UserLogVo">
+    <id column="id" jdbcType="VARCHAR" property="id" />
+    <result column="name" jdbcType="VARCHAR"  property="name" />
+    <result column="account" jdbcType="VARCHAR"  property="account" />
+    <result column="operation_object" jdbcType="VARCHAR"  property="operationObject" />
+    <result column="type" jdbcType="VARCHAR"  property="type" />
+    <result column="operation_type" jdbcType="VARCHAR"  property="operationType" />
+    <result column="token_id" jdbcType="VARCHAR"  property="tokenId" />
+    <result column="menu_id" jdbcType="VARCHAR"  property="menuId" />
+    <result column="content" jdbcType="LONGVARCHAR"  property="content" />
+    <result column="operation_time" jdbcType="TIMESTAMP"  property="operationTime" />
+    <result column="update_time" jdbcType="TIMESTAMP"  property="updateTime" />
+    <result column="response_time" jdbcType="BIGINT"  property="responseTime" />
+    <result column="is_sync" jdbcType="VARCHAR"  property="isSync" />
+  </resultMap>
+  
+  <resultMap id="selectResultMap" type="com.hdvon.nmp.vo.UserLogVo" extends="BaseResultMap">
+     <result column="menuName" jdbcType="VARCHAR"  property="menuName" />
+     <result column="typeName" jdbcType="VARCHAR"  property="typeName" />
+  </resultMap>
+  
+
+  <sql id="Customer_Column_List">
+  	t.id,t.name,t.account,t.operation_object,t.type,t.operation_type,t.token_id,t.menu_id,t.content,t.operation_time,t.update_time,t.response_time
+  </sql>
+  
+  <sql id="cameraLogCriteria">
+        <if test="startDate != null and startDate != ''">
+			and unix_timestamp(ulog.operation_time) &gt;= unix_timestamp(#{startDate})
+		</if>
+		<if test="endDate != null and endDate != ''">
+			and unix_timestamp(ulog.operation_time) &lt;= unix_timestamp(#{endDate})
+		</if>
+		<if test="currentDate != null and currentDate != ''">
+			and date_format(ulog.operation_time,'%Y-%m-%d') = #{currentDate}
+		</if>
+  </sql>
+  
+  <sql id="cameraCriteria">
+  		<if test="userId != null and userId != ''">
+        	and ur.user_id = #{userId}
+        </if>		
+        <if test="name != null and name != ''">
+        	and device.SBMC like concat('%',#{name},'%')
+        </if>
+        <if test="deviceIdList != null">
+           <foreach collection="deviceIdList" item="deviceId" index="index"
+	            open=" and device.id in(" close=")" separator=",">
+	            #{deviceId}
+	        </foreach>
+        </if>
+        <if test="deviceIdList == null">
+        	and ulog.operation_time is not null
+        </if>
+		group by deviceCode
+		order by hotPoints desc
+  </sql>
+  
+  <sql id="realTimeCameraCriteria">
+  		<if test="userId != null and userId != ''">
+        	and ur.user_id = #{userId}
+        </if>
+        <if test="deviceIdList != null">
+           <foreach collection="deviceIdList" item="deviceId" index="index"
+	            open=" and device.id in(" close=")" separator=",">
+	            #{deviceId}
+	        </foreach>
+        </if>
+		group by deviceCode
+		order by hotPoints desc
+  </sql>
+  
+  <sql id="realTimeCameraGroupCriteria">
+  		<if test="groupIdList != null">
+	    	<foreach collection="groupIdList" item="groupId" index="index"
+		     	open=" and tg.id in(" close=")" separator=",">
+		        #{groupId}
+		    </foreach>
+    	</if>
+	    <if test="deviceIdList != null">
+	    	<foreach collection="deviceIdList" item="deviceId" index="index"
+		     	open=" and device.id in(" close=")" separator=",">
+		        #{deviceId}
+		    </foreach>
+	    </if>
+		group by tg.name
+	    order by hotPoints desc
+  </sql>
+  
+  <sql id="cameraGroupCriteria">
+  		<if test="groupIdList != null">
+	    	<foreach collection="groupIdList" item="groupId" index="index"
+		     	open=" and tg.id in(" close=")" separator=",">
+		        #{groupId}
+		    </foreach>
+    	</if>
+	    <if test="deviceIdList != null">
+	    	<foreach collection="deviceIdList" item="deviceId" index="index"
+		     	open=" and device.id in(" close=")" separator=",">
+		        #{deviceId}
+		    </foreach>
+	    </if>
+	    group by tg.name 
+	    order by hotPoints desc
+  </sql>
+
+   <sql id="select_user_log">
+	     <if test="name != null and name != ''">
+			and t.name like concat('%',#{name},'%')
+		 </if>
+		  <if test="account != null and account != ''">
+			and t.account like concat('%',#{account},'%')
+		 </if>
+		  <if test="type != null and type != ''">
+			and t.type = #{type}
+		 </if>
+		  <if test="menuId != null and menuId != ''">
+		   and t.menu_id =#{menuId}
+		 </if>
+		 <if test="operation_type != null and operation_type != ''">
+			and t.operation_type =#{operation_type}
+		 </if>
+		  <if test="startDate != null and startDate != ''">
+			and unix_timestamp(t.operation_time) &gt;= unix_timestamp(#{startDate})
+		 </if>
+		  <if test="endDate != null and endDate != ''">
+			and unix_timestamp(t.operation_time) &lt;= unix_timestamp(#{endDate})
+		  </if>
+   </sql>
+   
+  <sql id="hotPoints_log">
+  		<if test="userId != null and userId != ''">
+			and ur.user_id = #{userId}
+		</if>
+        <if test="deviceId != null">
+        	and device.id = #{deviceId}
+        </if>
+		<if test="date != null and date != ''">
+			and date_format(ulog.operation_time,'%Y-%m-%d') = #{date}
+		</if>
+		<!-- 
+		<if test="dateEmpty != null">
+			and ulog.operation_time is null
+		</if>
+		 -->
+        group by device.SBBM,date_format(ulog.operation_time,'%Y-%m-%d')
+  </sql>
+  
+  <sql id="groupHotPoints_log">
+  	<if test="deviceIdList !=null ">
+       <foreach collection="deviceIdList" item="deviceId" index="index"
+         open=" and device.id in(" close=")" separator=",">
+         #{deviceId}
+     </foreach>
+    </if>
+    <if test="groupId != null">
+    	and tg.id = #{groupId}
+    </if>
+	<if test="date != null and date != ''">
+		and date_format(ulog.operation_time,'%Y-%m-%d') = #{date}
+	</if>
+    group by tg.name,date_format(ulog.operation_time,'%Y-%m-%d')
+  </sql>
+
+  <select id="selectUserLogPage" parameterType="map" resultMap="selectResultMap">
+    select t.name,t.account,t.content,t.operation_time,menu.`name` as menuName,
+    <if test="dictionaryType !=null and dictionaryType !='' ">
+      (SELECT d.ch_name from t_dictionary_type type,t_dictionary d where d.dictionary_type_id=type.id 
+         and type.en_name=#{dictionaryType} and t.type=d.value ) as typeName
+    </if>
+     FROM  t_user_log t 
+     LEFT JOIN t_sysmenu menu on menu.id =t.menu_id
+     <where>
+        <include refid="select_user_log"></include>
+     </where>
+    order by t.operation_time desc
+  </select> 
+  
+    <!-- 导出用户行为日志 -->
+  <!-- <select id="selectUserLogList"  resultType="java.util.HashMap">
+    select t.content,t.operation_time, t.operation_object,t.account, t.name,
+    <if test="dictionaryType !=null and dictionaryType !='' ">
+      (SELECT d.ch_name from t_dictionary_type type,t_dictionary d where d.dictionary_type_id=type.id 
+         and type.en_name=#{dictionaryType} and t.type=d.value ) as operationType,
+    </if>
+	 (select menu.`name` from t_sysmenu menu where menu.id =t.menu_id ) as menuName
+	FROM  t_user_log t where 1=1
+    <include refid="select_user_log"></include>
+    ORDER BY t.operation_time desc
+  </select> -->
+  
+  <select id="selectHistoryHotPoints" parameterType="map" resultType="java.util.HashMap">
+  	<choose>
+   	<when test="isAdmin ==1">
+   		select t.* from (
+			select date_format(ulog.operation_time,'%Y-%m-%d') as date, device.id,device.SBMC as name,
+			count(ulog.operation_object) as hotPoints
+			from t_device device 
+			left join t_user_log ulog on ulog.operation_object = device.SBBM
+			where 1=1
+			<include refid="hotPoints_log"></include>
+		) t where t.date is not null order by t.date
+   	</when>
+   	<otherwise>
+   		select t.* from (
+   			select date_format(ulog.operation_time,'%Y-%m-%d') as date, device.id,device.SBMC as name,
+			count(ulog.operation_object) as hotPoints
+			from t_device device 
+			left join t_user_log ulog on ulog.operation_object = device.SBBM
+			left join t_camera camera on camera.device_id = device.id
+			left join t_camera_mapping cm on cm.camera_id = camera.id
+			left join t_resourcerole_camera_permission rap on rap.camera_id = device.id
+			left join t_resourcerole r on r.id = rap.resoucerole_id
+			left join t_user_resourcerole ur on ur.resourcerole_id = r.id
+			where 1=1
+			<include refid="hotPoints_log"></include>
+		) t where t.date is not null order by t.date
+   	</otherwise>
+   	</choose>
+  </select>
+  
+  <select id="selectGroupHistoryHotPoints" parameterType="map" resultType="java.util.HashMap">
+		select t.* from (
+			select date_format(ulog.operation_time,'%Y-%m-%d') as date,tg.name as group_name,count(ulog.operation_object) as hotPoints
+			from t_cameragrouop tg
+			left join t_camera_cameragroup tcg on tcg.cameragroup_id = tg.id
+			left join t_camera camera on camera.id = tcg.camera_id
+			left join t_device device on device.id = camera.device_id
+			left join t_user_log ulog on ulog.operation_object = device.SBBM
+			where 1=1
+			<include refid="groupHotPoints_log"></include>
+		) t where t.date is not null order by t.date
+  </select>
+
+  <!-- 摄像机的历史访问热点 -->
+  <select id="selectHistoryCamara" parameterType="map" resultType="com.hdvon.nmp.vo.ReportResponseVo"> 
+   <choose>
+   <when test="isAdmin ==1">
+   		select device.id,device.sbbm as deviceCode,ulog.operation_time as creatTime,device.SBMC as name,count(ulog.operation_object) as hotPoints 
+		from t_device device 
+		left join t_user_log ulog on ulog.operation_object = device.SBBM
+		<include refid="cameraLogCriteria"></include>
+		where 1=1
+      	<include refid="cameraCriteria"></include>
+   </when>
+   <otherwise>
+   		select device.id,device.sbbm as deviceCode,ulog.operation_time as creatTime,device.SBMC as name,count(ulog.operation_object) as hotPoints 
+		from t_device device 
+		left join t_user_log ulog on ulog.operation_object = device.SBBM
+		<include refid="cameraLogCriteria"></include>
+		left join t_camera camera on camera.device_id = device.id
+		left join t_camera_mapping cm on cm.camera_id = camera.id
+		left join t_resourcerole_camera_permission rap on rap.camera_id = device.id
+		left join t_resourcerole r on r.id = rap.resoucerole_id
+		left join t_user_resourcerole ur on ur.resourcerole_id = r.id
+		where 1=1
+		<include refid="cameraCriteria"></include>
+   </otherwise>
+   </choose>
+  </select>
+  
+  
+  <!-- 查询默认的前十条摄像机的历史访问热点 -->
+  <select id="selectDefaultHistoryCamara" parameterType="map" resultType="com.hdvon.nmp.vo.ReportResponseVo"> 
+   <choose>
+   <when test="isAdmin ==1">
+   		select device.id,device.sbbm as deviceCode,ulog.operation_time as creatTime,device.SBMC as name,count(ulog.operation_object) as hotPoints 
+		from t_device device 
+		left join t_user_log ulog on ulog.operation_object = device.SBBM
+		<include refid="cameraLogCriteria"></include>
+		where 1=1
+       	<include refid="cameraCriteria"></include>
+       	limit 0,10
+   </when>
+   <otherwise>
+   		select device.id,device.sbbm as deviceCode,ulog.operation_time as creatTime,device.SBMC as name,count(ulog.operation_object) as hotPoints 
+		from t_device device 
+		left join t_user_log ulog on ulog.operation_object = device.SBBM
+		<include refid="cameraLogCriteria"></include>
+		left join t_camera camera on camera.device_id = device.id
+		left join t_camera_mapping cm on cm.camera_id = camera.id
+		left join t_resourcerole_camera_permission rap on rap.camera_id = device.id
+		left join t_resourcerole r on r.id = rap.resoucerole_id
+		left join t_user_resourcerole ur on ur.resourcerole_id = r.id
+		where 1=1
+		<include refid="cameraCriteria"></include>
+	    limit 0,10
+   </otherwise>
+   </choose>
+  </select>
+  
+  
+  <!-- 摄像机组的历史访问热点 -->
+  <select id="selectGroupHistoryList" parameterType="map" resultType="com.hdvon.nmp.vo.CameraGroupReportVo">
+  		select t.* from (
+			select tg.id,tg.name,count(ulog.operation_object) as hotPoints
+			from t_cameragrouop tg
+			left join t_camera_cameragroup tcg on tcg.cameragroup_id = tg.id
+			left join t_camera camera on camera.id = tcg.camera_id
+			left join t_device device on device.id = camera.device_id
+			left join t_user_log ulog on ulog.operation_object = device.SBBM
+			<include refid="cameraLogCriteria"></include>
+			where 1=1
+			<include refid="cameraGroupCriteria"></include>
+		) t
+		<if test="groupIdList == null">
+	    	where t.hotPoints != 0
+	    </if>
+  </select>
+  
+  
+  <!-- 查询默认的前十条摄像机组的历史访问热点 -->
+  <select id="selectDefaultGroupHistoryList" parameterType="map" resultType="com.hdvon.nmp.vo.CameraGroupReportVo">
+  		select t.* from (
+			select tg.id,tg.name,count(ulog.operation_object) as hotPoints
+			from t_cameragrouop tg
+			left join t_camera_cameragroup tcg on tcg.cameragroup_id = tg.id
+			left join t_camera camera on camera.id = tcg.camera_id
+			left join t_device device on device.id = camera.device_id
+			left join t_user_log ulog on ulog.operation_object = device.SBBM
+			<include refid="cameraLogCriteria"></include>
+			where 1=1
+			<include refid="cameraGroupCriteria"></include>
+		) t
+		<if test="groupIdList == null">
+	    	where t.hotPoints != 0
+	    </if>
+  		limit 0,10
+  </select>
+  
+  
+  <!-- 查询默认实时的前50条摄像机组的访问热点 -->
+  <select id="selectDefaultRealTimeCameraGroup" parameterType="map" resultType="com.hdvon.nmp.vo.CameraGroupReportVo">
+  		select tg.id,tg.name,count(ulog.operation_object) as hotPoints
+		from t_cameragrouop tg
+		left join t_camera_cameragroup tcg on tcg.cameragroup_id = tg.id
+		left join t_camera camera on camera.id = tcg.camera_id
+		left join t_device device on device.id = camera.device_id
+		left join t_user_log ulog on ulog.operation_object = device.SBBM
+		<include refid="cameraLogCriteria"></include>
+		where 1=1
+		<include refid="realTimeCameraGroupCriteria"></include>
+	    limit 0,50
+  </select>
+  
+  
+  <!-- 摄像机组的实时访问热点 -->
+  <select id="selectRealTimeCameraGroupList" parameterType="map" resultType="com.hdvon.nmp.vo.CameraGroupReportVo">
+        select tg.id,tg.name,count(ulog.operation_object) as hotPoints
+		from t_cameragrouop tg
+		left join t_camera_cameragroup tcg on tcg.cameragroup_id = tg.id
+		left join t_camera camera on camera.id = tcg.camera_id
+		left join t_device device on device.id = camera.device_id
+		left join t_user_log ulog on ulog.operation_object = device.SBBM
+		<include refid="cameraLogCriteria"></include>
+		where 1=1
+		<include refid="realTimeCameraGroupCriteria"></include>
+  </select>
+
+  
+  <!-- 查询默认实时的前50条摄像机 -->
+  <select id="selectDefaultRealTimeCamera" parameterType="map" resultType="com.hdvon.nmp.vo.ReportResponseVo"> 
+   <choose>
+   <when test="isAdmin ==1">
+   		select device.id,device.sbbm as deviceCode,count(ulog.operation_object) as hotPoints
+		from t_device device 
+		left join t_user_log ulog on ulog.operation_object = device.SBBM
+       	<include refid="cameraLogCriteria"></include>
+       	where 1=1
+       	<include refid="realTimeCameraCriteria"></include>
+       	limit 0,50
+   </when>
+   <otherwise>
+   		select device.id,device.sbbm as deviceCode,count(ulog.operation_object) as hotPoints
+		from t_device device 
+		left join t_user_log ulog on ulog.operation_object = device.SBBM
+		<include refid="cameraLogCriteria"></include>
+		left join t_camera camera on camera.device_id = device.id
+		left join t_camera_mapping cm on cm.camera_id = camera.id
+		left join t_resourcerole_camera_permission rap on rap.camera_id = device.id
+		left join t_resourcerole r on r.id = rap.resoucerole_id
+		left join t_user_resourcerole ur on ur.resourcerole_id = r.id
+		where 1=1
+		<include refid="realTimeCameraCriteria"></include>
+	   	limit 0,50
+   </otherwise>
+   </choose>
+  </select>
+
+  <!-- 摄像机的实时访问热点 -->
+  <select id="selectRealTimeCameraList" parameterType="map" resultType="com.hdvon.nmp.vo.ReportResponseVo">
+   <choose>
+   <when test="isAdmin ==1">
+   		select device.id,device.sbmc as name,device.sbbm as deviceCode,count(ulog.operation_object) as hotPoints
+		from t_device device 
+		left join t_user_log ulog on ulog.operation_object = device.SBBM
+       	<include refid="cameraLogCriteria"></include>
+       	where 1=1
+       	<include refid="realTimeCameraCriteria"></include>
+   </when>
+   <otherwise>
+   		select device.id,device.sbmc as name,device.sbbm as deviceCode,count(ulog.operation_object) as hotPoints
+		from t_device device 
+		left join t_user_log ulog on ulog.operation_object = device.SBBM
+		<include refid="cameraLogCriteria"></include>
+		left join t_camera camera on camera.device_id = device.id
+		left join t_camera_mapping cm on cm.camera_id = camera.id
+		left join t_resourcerole_camera_permission rap on rap.camera_id = device.id
+		left join t_resourcerole r on r.id = rap.resoucerole_id
+		left join t_user_resourcerole ur on ur.resourcerole_id = r.id
+		where 1=1
+		<include refid="realTimeCameraCriteria"></include>
+   </otherwise>
+   </choose>
+  </select>
+  
+  
+  <sql id="cameraPeriodHotPoints_log">
+        <if test="deviceId != null">
+        	and device.id = #{deviceId}
+        </if>
+        <if test="startTime != null and startTime != ''">
+			and date_format(ulog.operation_time,'%H:%i:%s') &gt;= #{startTime}
+		</if>
+		<if test="endTime != null and endTime != ''">
+			and date_format(ulog.operation_time,'%H:%i:%s') &lt;= #{endTime}
+		</if>
+		<if test="startDate != null and startDate != ''">
+			and unix_timestamp(ulog.operation_time) &gt;= unix_timestamp(#{startDate})
+		</if>
+		<if test="endDate != null and endDate != ''">
+			and unix_timestamp(ulog.operation_time) &lt;= unix_timestamp(#{endDate})
+		</if>
+        group by ulog.operation_object,date_format(ulog.operation_time,'%H:%i:%s'),ulog.operation_time
+  </sql>
+  
+  <!-- 摄像机的分时段访问热点 -->
+  <select id="selectCameraPeriodHotPoints" parameterType="map" resultType="java.util.HashMap"> 
+   <choose>
+   <when test="isAdmin ==1">
+   		select t.* from (
+			select date_format(ulog.operation_time,'%H:%i:%s') as time,ulog.operation_time as date,device.SBMC as name,count(ulog.operation_object) as hotPoints
+			from t_user_log ulog,t_device device where ulog.operation_object = device.SBBM
+			<include refid="cameraPeriodHotPoints_log"></include>
+		) t order by t.time,t.date
+   </when>
+   <otherwise>
+   		select t.* from (
+			select date_format(ulog.operation_time,'%H:%i:%s') as time,ulog.operation_time as date,device.SBMC as name,count(ulog.operation_object) as hotPoints
+			FROM t_device device,t_camera_mapping cm, t_camera camera ,t_user_resourcerole AS ur ,t_resourcerole AS r ,t_resourcerole_camera_permission AS rap,t_user_log as ulog
+	   		where device.id=camera.device_id and camera.id=cm.camera_id and
+	   		ur.user_id = #{userId} and ur.resourcerole_id=r.id and r.id=rap.resoucerole_id and rap.camera_id=device.id and ulog.operation_object=device.SBBM
+			<include refid="cameraPeriodHotPoints_log"></include>
+		) t order by t.time,t.date
+   </otherwise>
+   </choose>
+  </select>
+  
+  <sql id="cameraGroupPeriodHotPoints_log">
+  	<if test="deviceIdList !=null ">
+       <foreach collection="deviceIdList" item="deviceId" index="index"
+         open=" and device.id in(" close=")" separator=",">
+         #{deviceId}
+     </foreach>
+    </if>
+    <if test="groupId != null">
+    	and tg.id = #{groupId}
+    </if>
+	<if test="startTime != null and startTime != ''">
+		and date_format(ulog.operation_time,'%H:%i:%s') &gt;= #{startTime}
+	</if>
+	<if test="endTime != null and endTime != ''">
+		and date_format(ulog.operation_time,'%H:%i:%s') &lt;= #{endTime}
+	</if>
+	<if test="startDate != null and startDate != ''">
+		and unix_timestamp(ulog.operation_time) &gt;= unix_timestamp(#{startDate})
+	</if>
+	<if test="endDate != null and endDate != ''">
+		and unix_timestamp(ulog.operation_time) &lt;= unix_timestamp(#{endDate})
+	</if>
+    group by ulog.operation_object,date_format(ulog.operation_time,'%H:%i:%s'),ulog.operation_time
+  </sql>
+  
+  <!-- 摄像机组的分时段访问热点 -->
+  <select id="selectCameraGroupPeriodHotPoints" parameterType="map" resultType="java.util.HashMap"> 
+  		select t.* from (
+			select date_format(ulog.operation_time,'%H:%i:%s') as time,ulog.operation_time as date,tg.name as group_name,count(ulog.operation_object) as hotPoints
+			from t_user_log ulog,t_device device,t_cameragrouop tg,t_camera_cameragroup tcg,t_camera camera 
+			where ulog.operation_object = device.SBBM
+			and tg.id = tcg.cameragroup_id and tcg.camera_id = camera.id and camera.device_id = device.id
+			<include refid="cameraGroupPeriodHotPoints_log"></include>
+		) t order by t.time,t.date
+  </select>
+
+  <sql id="cameraRealTime_log">
+  	<if test="deviceIdList !=null ">
+      <foreach collection="deviceIdList" item="deviceId" index="index"
+          open=" and device.id in(" close=")" separator=",">
+          #{deviceId}
+      </foreach>
+    </if>
+	<if test="currentDate != null and currentDate != ''">
+		and date_format(ulog.operation_time,'%Y-%m-%d') = #{currentDate}
+	</if>
+    group by ulog.operation_object
+	order by hotPoints desc
+  </sql>
+
+
+  <sql id="cameraGroupRealTime_log">
+  	<if test="groupIdList !=null ">
+    	<foreach collection="groupIdList" item="groupId" index="index"
+	     	open=" and tg.id in(" close=")" separator=",">
+	        #{groupId}
+	    </foreach>
+    </if>
+    <if test="deviceIdList !=null ">
+    	<foreach collection="deviceIdList" item="deviceId" index="index"
+	     	open=" and device.id in(" close=")" separator=",">
+	        #{deviceId}
+	    </foreach>
+    </if>
+	<if test="currentDate != null and currentDate != ''">
+		and date_format(ulog.operation_time,'%Y-%m-%d') = #{currentDate}
+	</if>
+    group by tg.name
+	order by hotPoints desc
+  </sql>
+
+
+  <sql id="realTimeCameraCount">
+  	<if test="deviceCode != null">
+  		and ulog.operation_object = #{deviceCode}
+    </if>
+    <if test="deviceCodeList != null">
+    	<foreach collection="deviceCodeList" item="deviceCode" index="index"
+	     	open=" and ulog.operation_object in(" close=")" separator=",">
+	        #{deviceCode}
+	    </foreach>
+    </if>
+	<if test="currentDate != null and currentDate != ''">
+		and date_format(ulog.operation_time,'%Y-%m-%d') = #{currentDate}
+	</if>
+  </sql>
+
+
+  <select id="selectRealTimeCameraCount" parameterType="map" resultType="java.lang.Long">
+	select count(ulog.id) from t_user_log ulog where 1=1
+	<include refid="realTimeCameraCount"></include>
+  </select>
+  
+
+</mapper>

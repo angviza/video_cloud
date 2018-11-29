@@ -1,0 +1,172 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<!DOCTYPE mapper PUBLIC "-//mybatis.org//DTD Mapper 3.0//EN" "http://mybatis.org/dtd/mybatis-3-mapper.dtd">
+<mapper namespace="com.hdvon.nmp.mapper.OrganizationMapper">
+  <resultMap id="BaseResultMap" type="com.hdvon.nmp.vo.OrganizationVo">
+    <id column="id" jdbcType="VARCHAR" property="id" />
+    <result column="name" jdbcType="VARCHAR"  property="name" />
+    <result column="pid" jdbcType="VARCHAR"  property="pid" />
+    <result column="org_code" jdbcType="VARCHAR"  property="orgCode" />
+    <result column="org_code_split" jdbcType="VARCHAR"  property="orgCodeSplit" />
+    <result column="is_virtual" jdbcType="INTEGER"  property="isVirtual" />
+    <result column="org_type" jdbcType="INTEGER"  property="orgType" />
+    <result column="buss_group_id" jdbcType="VARCHAR"  property="bussGroupId" />
+    <result column="buss_group_name" jdbcType="VARCHAR"  property="bussGroupName" />
+    <result column="level" jdbcType="INTEGER"  property="level" />
+    <result column="description" jdbcType="VARCHAR"  property="description" />
+    <result column="orderby" jdbcType="INTEGER"  property="orderby" />
+    <!--<result column="create_time" jdbcType="TIMESTAMP"  property="createTime" />-->
+    <result column="update_time" jdbcType="TIMESTAMP"  property="updateTime" />
+    <!--<result column="create_user" jdbcType="VARCHAR"  property="createUser" />-->
+    <result column="update_user" jdbcType="VARCHAR"  property="updateUser" />
+  </resultMap>
+
+  <sql id="Customer_Column_List">
+    t.id,t.name,t.pid,t.org_code,t.org_code_split,t.is_virtual,t.org_type,t.buss_group_id,t.level,t.description,t.orderby
+  </sql>
+
+  <sql id = "Base_Vo_List">
+  	ro.id,ro.name,ro.pid,ro.org_code as orgCode,ro.org_type as orgType,ro.org_code_split as orgCodeSplit,ro.is_virtual as isVirtual,ro.level, ro.description,ro.orderby,ro.create_time as createTime,ro.update_time as updateTime,ro.update_user as updateUser
+  </sql>
+  
+  <select id="selectByParam" parameterType="map" resultMap="BaseResultMap">
+      select <include refid="Customer_Column_List"></include> from t_organization t
+      <where>
+          <if test="name != null and name !=''">
+             and t.name=#{name}
+          </if>
+          <if test="nameList != null and nameList.size() > 0">
+	           and t.name in
+	            <foreach collection="nameList" item="item" open="(" close=")"  separator=",">
+	            #{item}
+	        </foreach>
+	     </if>
+      </where>
+	  order by t.create_time desc
+   </select>
+  
+  <!--查询组织机构以下的所有子机构 -->
+  <!-- <select id="selectChildOrgsByPid" resultType="com.hdvon.nmp.vo.OrganizationVo">
+  	select
+		<include refid="Base_Vo_List"/>
+	 from
+  	(select o.*,ro.name as parentOrgName from t_organization o left join t_organization ro on ro.id = o.pid) a
+  	where 1=1
+  	<if test = "isVirtual != null">
+  		and a.is_virtual = #{isVirtual}
+  	</if>
+	 <if test="id != null and id != ''">
+        and FIND_IN_SET(a.id,getChildrenOrg(#{id}))
+     </if>
+  </select> -->
+  <select id="selectChildOrgsByPid" resultType="com.hdvon.nmp.vo.OrganizationVo">
+  	SELECT
+  		<include refid="Base_Vo_List"/>,
+  		(SELECT o.name FROM t_organization o WHERE o.id=ro.pid) parentOrgName
+  		,(SELECT o.org_code FROM t_organization o WHERE o.id=ro.pid) parentOrgCode
+  		,bg.id as bussGroupId,bg.name as bussGroupName
+  	FROM
+  		t_organization ro
+		left join t_bussiness_group bg
+		on bg.id = ro.buss_group_id
+  	WHERE 1=1
+  	<if test = "isVirtual != null">
+  		and ro.is_virtual = #{isVirtual}
+  	</if>
+	 <if test="id != null and id != ''">
+        and (ro.id=#{id} or ro.pid=#{id})
+     </if>
+    <if test = "search != null and search != ''">
+  		and ro.name like concat('%',#{search},'%')
+  	</if>
+  </select>
+  <!--查询组织机构上面的所有父机构 -->
+  <!-- <select id="selectParentOrgsByPid" resultType="com.hdvon.nmp.vo.OrganizationVo">
+ 	select
+ 		<include refid="Base_Vo_List"/>
+ 	 from
+ 	 	(select o.*,ro.name as parentOrgName from t_organization o left join t_organization ro on ro.id = o.pid) a
+ 		where 1=1
+  	<if test = "isVirtual != null">
+  		and a.is_virtual = #{isVirtual}
+  	</if>
+	<if test="id != null and id != ''">
+		where FIND_IN_SET(a.id,getParentOrg(#{id}))
+	</if>
+  </select> -->
+  <select id="selectParentOrgsByPid" resultType="com.hdvon.nmp.vo.OrganizationVo">
+  	SELECT
+  		<include refid="Base_Vo_List"/>,
+  		(SELECT o.name FROM t_organization o WHERE o.pid=ro.id) parentOrgName
+  	FROM
+  		t_organization ro
+  	WHERE 1=1
+  	<if test = "isVirtual != null">
+  		and ro.is_virtual = #{isVirtual}
+  	</if>
+	 <if test="id != null and id != ''">
+        and (ro.id=#{id} or ro.pid=#{id})
+     </if>
+     <if test = "search != null and search != ''">
+  		and ro.name like concat('%',#{search},'%')
+  	</if>
+  </select>
+  <!-- 根据查询条件查询组织机构列表 -->
+  <select id="selectOrganizationList" resultType="com.hdvon.nmp.vo.OrganizationVo">
+  	SELECT
+  		<include refid="Base_Vo_List"/>,
+  		(SELECT o.org_code FROM t_organization o WHERE o.id=ro.pid) parentOrgCode,
+  		(SELECT o.name FROM t_organization o WHERE o.id=ro.pid) parentOrgName
+  		,bg.id as bussGroupId,bg.name as bussGroupName
+  	FROM
+  		t_organization ro
+  		left join t_bussiness_group bg
+  		on bg.id = ro.buss_group_id
+  	WHERE 1=1
+  	<if test = "isVirtual != null">
+  		and ro.is_virtual = #{isVirtual}
+  	</if>
+  	<if test = "search != null and search != ''">
+  		and ro.name like concat('%',#{search},'%')
+  	</if>
+     <if test="orgIds != null and orgIds.size() > 0">
+           and ro.id in
+            <foreach collection="orgIds" item="item" open="(" close=")"  separator=",">
+            #{item}
+        </foreach>
+     </if>
+      <if test="orgCodes != null and orgCodes.size() > 0">
+           and ro.org_code in
+            <foreach collection="orgCodes" item="item" open="(" close=")"  separator=",">
+            #{item}
+        </foreach>
+     </if>
+  	order by ro.create_time desc
+  </select>
+  <!-- 根据id查询组织机构信息 -->
+  <select id="selectOrganizationById" parameterType="java.lang.String" resultType="com.hdvon.nmp.vo.OrganizationVo">
+  	SELECT
+  		<include refid="Base_Vo_List"/>,
+  		(SELECT o.name FROM t_organization o WHERE o.id=ro.pid) parentOrgName,
+  		bg.id as bussGroupId,bg.name as bussGroupName,
+  		(SELECT o.org_code FROM t_organization o WHERE o.id=ro.pid) parentOrgCode
+  	FROM
+  		t_organization ro
+  		left join t_bussiness_group bg
+  		on bg.id = ro.buss_group_id and ro.buss_group_id is not null and ro.is_virtual = 1
+  	WHERE 1=1
+  		and ro.id=#{id}
+  </select>
+  <!-- 根据id查询组织机构信息 -->
+  <select id="selectOrgById" parameterType="java.lang.String" resultType="com.hdvon.nmp.vo.OrganizationVo">
+  	SELECT
+  		<include refid="Base_Vo_List"/>,
+  		(SELECT o.name FROM t_organization o WHERE o.id=ro.pid) parentOrgName,
+  		bg.id as bussGroupId,bg.name as bussGroupName
+  	FROM
+  		t_organization ro
+  		left join t_bussiness_group bg
+  		on bg.id = ro.buss_group_id and ro.buss_group_id is not null and ro.is_virtual != 1
+  	WHERE 1=1
+  		and ro.id=#{id}
+  </select>
+</mapper>

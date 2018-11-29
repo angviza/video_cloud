@@ -1,0 +1,81 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<!DOCTYPE mapper PUBLIC "-//mybatis.org//DTD Mapper 3.0//EN" "http://mybatis.org/dtd/mybatis-3-mapper.dtd">
+<mapper namespace="com.hdvon.nmp.mapper.BussinessGroupMapper">
+  <resultMap id="BaseResultMap" type="com.hdvon.nmp.vo.BussinessGroupVo">
+    <id column="id" jdbcType="VARCHAR" property="id" />
+    <result column="name" jdbcType="VARCHAR"  property="name" />
+    <result column="code" jdbcType="VARCHAR"  property="code" />
+    <result column="status" jdbcType="INTEGER"  property="status" />
+    <result column="description" jdbcType="VARCHAR"  property="description" />
+    <!--<result column="create_time" jdbcType="TIMESTAMP"  property="createTime" />-->
+    <result column="update_time" jdbcType="TIMESTAMP"  property="updateTime" />
+    <result column="create_user" jdbcType="VARCHAR"  property="createUser" />
+    <!--<result column="update_user" jdbcType="VARCHAR"  property="updateUser" />-->
+  </resultMap>
+
+  <sql id="Customer_Column_List">
+    t.id,t.name,t.code,t.status,t.description,t.create_user,t.update_time
+  </sql>
+
+    <resultMap  id="bussinessGroupAndCamera" type="com.hdvon.nmp.vo.CameraBussinessGroupVo">
+	   <id column="deviceId" property="deviceId"/>
+	   <result column="cameraId" property="cameraId"/>
+	   <result column="buessId" property="buessId" />
+	   <result column="SBBM" property="sbbm" />
+	   <result column="SBMC" property="sbmc" />
+	   <result column="SBZT" property="sbzt" />
+	   <result column="SXJLX" property="sxjlx" />
+	</resultMap>
+	
+	<select id="selectByParam" parameterType="map" resultMap="BaseResultMap">
+      select <include refid="Customer_Column_List"></include> from t_bussiness_group t
+      <where>
+          <if test="code != null and code !=''">
+             and t.code like concat('%',#{code},'%')
+          </if>
+          <if test="name != null and name !=''">
+             and t.name like concat('%',#{name},'%')
+         </if>
+      </where>
+      ORDER BY t.create_time desc 
+   </select>
+	
+
+   <!-- 业务分组关联摄像机列表 -->
+    <select id="selectBuessByCameraPage" parameterType="com.hdvon.nmp.vo.BussinessGroupVo" resultMap="bussinessGroupAndCamera">
+     SELECT
+	  buess.id as buessId,de.Id as deviceId,de.SBBM,de.SBMC,de.SBZT,de.SXJLX,camera.id as cameraId
+	FROM
+	  t_bussiness_group buess ,t_device de ,t_camera camera
+	where
+	  buess.id=de.buss_group_id and de.id =camera.device_id
+	 <if test="id !=null">
+	   and buess.id=#{id}
+	 </if>
+	 <if test="buessId !=null and buessId !='' ">
+	   and buess.id=#{buessId}
+	 </if>
+	 <if test="sbbm !=null and sbbm !='' ">
+	   and de.SBBM like concat('%',#{sbbm},'%')
+	 </if>
+	 <if test="sbmc !=null and sbmc !='' ">
+	   and de.SBMC  like concat('%',#{sbmc},'%')
+	 </if>
+   </select> 
+   <!-- 业务分组关联摄像机列表 -->
+   <!-- <select id="selectBuessByCameraPage" parameterType="com.hdvon.nmp.vo.BussinessGroupVo" resultMap="bussinessGroupAndCamera">
+     SELECT
+	  buess.id as buessId,de.Id as deviceId,de.SBBM,de.SBMC,de.SBZT,de.SXJLX,camera.id as cameraId
+	FROM
+	  t_bussiness_group buess ,t_device de ,t_camera camera,t_camera_mapping cm,t_organization o
+	where
+	      buess.id=o.buss_group_id
+	  and o.id =cm.org_id
+	  and camera.id = cm.camera_id
+	  and camera.device_id = de.id
+	 <if test="id !=null">
+	   and buess.id=#{id}
+	 </if>
+   </select> -->
+
+</mapper>

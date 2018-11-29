@@ -1,0 +1,277 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<project xmlns="http://maven.apache.org/POM/4.0.0" xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance"
+         xsi:schemaLocation="http://maven.apache.org/POM/4.0.0 http://maven.apache.org/xsd/maven-4.0.0.xsd">
+    <modelVersion>4.0.0</modelVersion>
+    <artifactId>nmp-web</artifactId>
+    <packaging>jar</packaging>
+    <name>nmp-web</name>
+    <description>Demo project for Spring Boot</description>
+    
+    <parent>
+        <groupId>com.hdvon.nmp</groupId>
+        <artifactId>nmp-parent</artifactId>
+        <version>0.0.1-SNAPSHOT</version>
+    </parent>
+
+    <dependencies>
+        <!-- spring-boot-dubbo -->
+        <dependency>
+            <groupId>com.alibaba.boot</groupId>
+            <artifactId>dubbo-spring-boot-starter</artifactId>
+            <version>${dubbo-spring-boot-starter.version}</version>
+        </dependency>
+
+        <dependency>
+            <groupId>org.springframework.boot</groupId>
+            <artifactId>spring-boot-starter-freemarker</artifactId>
+        </dependency>
+
+        <dependency>
+            <groupId>org.springframework.boot</groupId>
+            <artifactId>spring-boot-starter-web</artifactId>
+        </dependency>
+        
+		<!-- 
+		<dependency>
+            <groupId>org.springframework.boot</groupId>
+            <artifactId>spring-boot-starter-amqp</artifactId>
+        </dependency>
+		 -->
+
+        <dependency>
+            <groupId>org.springframework.boot</groupId>
+            <artifactId>spring-boot-starter-test</artifactId>
+            <scope>test</scope>
+        </dependency>
+
+        <dependency>
+            <groupId>com.hdvon.nmp</groupId>
+            <artifactId>nmp-commons</artifactId>
+            <version>0.0.1-SNAPSHOT</version>
+        </dependency>
+
+        <dependency>
+            <groupId>com.hdvon.nmp</groupId>
+            <artifactId>nmp-center-api</artifactId>
+            <version>0.0.1-SNAPSHOT</version>
+        </dependency>
+
+         <dependency>
+            <groupId>com.hdvon.sip</groupId>
+            <artifactId>nmp-sip-api</artifactId>
+            <version>0.0.1-SNAPSHOT</version>
+        </dependency>
+        
+        <!-- 
+        <dependency>
+            <groupId>com.sip</groupId>
+            <artifactId>nmp-platform-interact</artifactId>
+            <version>0.0.1-SNAPSHOT</version>
+        </dependency>
+         -->
+
+        <dependency>
+            <groupId>org.springframework.boot</groupId>
+            <artifactId>spring-boot-starter-websocket</artifactId>
+        </dependency>
+
+        <!--swagger2接口文档-->
+        <dependency>
+            <groupId>io.springfox</groupId>
+            <artifactId>springfox-swagger2</artifactId>
+            <version>2.8.0</version>
+        </dependency>
+        <!--swagger2接口文档-->
+        <dependency>
+            <groupId>io.springfox</groupId>
+            <artifactId>springfox-swagger-ui</artifactId>
+            <version>2.8.0</version>
+        </dependency>
+        <!--swagger2接口文档-->
+        <!--
+        <dependency>
+            <groupId>com.github.caspar-chen</groupId>
+            <artifactId>swagger-ui-layer</artifactId>
+            <version>0.0.4</version>
+        </dependency>
+        -->
+
+        <!-- https://mvnrepository.com/artifact/io.jsonwebtoken/jjwt -->
+        <dependency>
+            <groupId>io.jsonwebtoken</groupId>
+            <artifactId>jjwt</artifactId>
+            <version>0.9.0</version>
+        </dependency>
+
+        <!--redis-->
+        <dependency>
+            <groupId>org.springframework.boot</groupId>
+            <artifactId>spring-boot-starter-data-redis</artifactId>
+        </dependency>
+
+        <dependency>
+            <groupId>org.springframework.boot</groupId>
+            <artifactId>spring-boot-starter-aop</artifactId>
+        </dependency>
+
+        <dependency>
+            <groupId>com.hdvon.client</groupId>
+            <artifactId>nmp-client-api</artifactId>
+            <version>1.0.0</version>
+        </dependency>
+       
+		<!-- https://mvnrepository.com/artifact/com.github.rholder/guava-retrying -->
+		<dependency>
+		    <groupId>com.github.rholder</groupId>
+		    <artifactId>guava-retrying</artifactId>
+		    <version>2.0.0</version>
+		</dependency>
+		
+        <dependency>
+		  <groupId>com.hdvon.face</groupId>
+		  <artifactId>nmp-face-api</artifactId>
+		  <version>0.0.1-SNAPSHOT</version>
+        </dependency>
+        
+        <!-- 引入kafka -->
+        <dependency>
+            <groupId>org.springframework.kafka</groupId>
+            <artifactId>spring-kafka</artifactId>
+            <exclusions>
+            	<exclusion>
+				    <groupId>org.apache.kafka</groupId>
+				    <artifactId>kafka-clients</artifactId>
+            	</exclusion>
+            </exclusions>
+        </dependency>
+        <dependency>
+		    <groupId>org.apache.kafka</groupId>
+		    <artifactId>kafka-clients</artifactId>
+		    <version>2.0.0</version>
+		</dependency>
+		
+    </dependencies>
+    <distributionManagement>
+        <repository>
+            <id>Releases</id>
+            <name>NexusReleaseRepository</name>
+            <url>http://192.168.2.140:8081/nexus/content/repositories/releases/</url>
+        </repository>
+        <snapshotRepository>
+            <id>Snapshots</id>
+            <name>NexusSnapshotRepository</name>
+            <url>http://192.168.2.140:8081/nexus/content/repositories/snapshots/</url>
+        </snapshotRepository>
+    </distributionManagement>
+    
+    <build>
+        <plugins>
+            <plugin>
+                <groupId>org.springframework.boot</groupId>
+                <artifactId>spring-boot-maven-plugin</artifactId>
+            </plugin>
+        </plugins>
+    </build>
+    
+    <!--打包依赖库-->
+    <!-- antrun插件打包  -->
+    <!-- 
+    <build>
+        <plugins>
+            <plugin>
+                <groupId>org.apache.maven.plugins</groupId>
+                <artifactId>maven-dependency-plugin</artifactId>
+                <executions>
+                    <execution>
+                        <id>copy-dependencies</id>
+                        <phase>package</phase>
+                        <goals>
+                            <goal>copy-dependencies</goal>
+                        </goals>
+                        <configuration>
+                            <outputDirectory>target/libs</outputDirectory>
+                            <excludeTransitive>false</excludeTransitive>
+                            <stripVersion>false</stripVersion>
+                            <includeScope>runtime</includeScope>
+                        </configuration>
+                    </execution>
+                </executions>
+            </plugin>
+
+			<plugin>
+                <groupId>org.apache.maven.plugins</groupId>
+                <artifactId>maven-antrun-plugin</artifactId>
+                <executions>
+                    <execution>
+                        <phase>package</phase>
+                        <goals>
+                            <goal>run</goal>
+                        </goals>
+                        <configuration>
+                            <target>
+                                <property name="classes">target/classes</property>
+                            </target>
+                        </configuration>
+                    </execution>
+                </executions>
+            </plugin>
+        </plugins>
+    </build>
+     -->
+
+	<!--打包依赖库-->
+	<!--nmp-platform-interact依赖无需生成jar，方便c++读取-->
+	<!--将nmp-platfomr-interact工程的class拷贝到web的target/class目录-->
+	<!-- 
+	<build>
+        <plugins>
+            <plugin>
+                <groupId>org.apache.maven.plugins</groupId>
+                <artifactId>maven-dependency-plugin</artifactId>
+                <executions>
+                    <execution>
+                        <id>copy-dependencies</id>
+                        <phase>package</phase>
+                        <goals>
+                            <goal>copy-dependencies</goal>
+                        </goals>
+                        <configuration>
+                            <outputDirectory>target/libs</outputDirectory>
+                            <excludeTransitive>false</excludeTransitive>
+                            <stripVersion>false</stripVersion>
+                            <excludeArtifactIds>nmp-platform-interact</excludeArtifactIds>
+                            <includeScope>runtime</includeScope>
+                        </configuration>
+                    </execution>
+                </executions>
+            </plugin>
+
+            <plugin>
+                <groupId>org.apache.maven.plugins</groupId>
+                <artifactId>maven-antrun-plugin</artifactId>
+                <executions>
+                    <execution>
+                        <phase>package</phase>
+                        <goals>
+                            <goal>run</goal>
+                        </goals>
+                        <configuration>
+                            <target>
+                                
+                                <property name="classes">target/classes</property>
+                                <property name="dist">target/distribution</property>
+                                <copy todir="${classes}">
+                                    <fileset dir="../nmp-platform-interact/target/classes">
+                                        <include name="**/*.*"/>
+                                    </fileset>
+                                </copy>
+                            </target>
+                        </configuration>
+                    </execution>
+                </executions>
+            </plugin>
+        </plugins>
+    </build>
+	-->
+
+</project>

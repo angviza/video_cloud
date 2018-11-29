@@ -1,0 +1,243 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<!DOCTYPE mapper PUBLIC "-//mybatis.org//DTD Mapper 3.0//EN" "http://mybatis.org/dtd/mybatis-3-mapper.dtd">
+<mapper namespace="com.hdvon.nmp.mapper.UserMapper">
+  <resultMap id="BaseResultMap" type="com.hdvon.nmp.vo.UserVo">
+    <id column="id" jdbcType="VARCHAR" property="id" />
+    <result column="account" jdbcType="VARCHAR"  property="account" />
+    <result column="name" jdbcType="VARCHAR"  property="name" />
+    <result column="card_id" jdbcType="VARCHAR"  property="cardId" />
+    <result column="mobile_phone" jdbcType="VARCHAR"  property="mobilePhone" />
+    <result column="email" jdbcType="VARCHAR"  property="email" />
+    <!--<result column="password" jdbcType="VARCHAR"  property="password" />-->
+    <result column="duty" jdbcType="VARCHAR"  property="duty" />
+    <result column="description" jdbcType="VARCHAR"  property="description" />
+    <result column="level" jdbcType="INTEGER"  property="level" />
+    <result column="mac" jdbcType="VARCHAR"  property="mac" />
+    <result column="enable" jdbcType="TINYINT"  property="enable" />
+    <result column="is_pki_user" jdbcType="INTEGER"  property="isPkiUser" />
+    <result column="last_login_date" jdbcType="TIMESTAMP"  property="lastLoginDate" />
+    <result column="is_user_modify" jdbcType="VARCHAR"  property="isUserModify" />
+    <result column="is_resource_assigned" jdbcType="VARCHAR"  property="isResourceAssigned" />
+    <result column="is_role_granted" jdbcType="VARCHAR"  property="isRoleGranted" />
+    <!--<result column="create_time" jdbcType="TIMESTAMP"  property="createTime" />-->
+    <!--<result column="update_time" jdbcType="TIMESTAMP"  property="updateTime" />-->
+    <!--<result column="create_user" jdbcType="VARCHAR"  property="createUser" />-->
+    <!--<result column="update_user" jdbcType="VARCHAR"  property="updateUser" />-->
+    <result column="departmentId" property="departmentId" />
+    <result column="departmentName" property="departmentName" />
+    <result column="depCodeSplit" jdbcType="VARCHAR"  property="depCodeSplit" />
+    <result column="permissionplan_id" property="permissionplanId" />
+    <result column="valid_type" property="validType" />
+    <result column="last_login" property="lastLogin" />
+    
+  </resultMap>
+
+  <sql id="Customer_Column_List">
+    t.id,t.account,t.name,t.card_id,t.mobile_phone,t.email,/*t.password,*/t.duty,t.description,t.level,t.mac,t.enable,t.is_pki_user,t.last_login_date,t.is_user_modify,t.is_resource_assigned,t.is_role_granted,t.update_time,t.valid_type
+  </sql>
+
+    <!-- 部门查询用户列表 -->
+    <select id="selectUsersByParam" resultMap="BaseResultMap" parameterType="map">
+        SELECT
+        <include refid="Customer_Column_List"></include>,
+        (SELECT ud.dep_id FROM t_user_department ud, t_department d WHERE ud.user_id = t.id AND ud.dep_id = d.id LIMIT 1) departmentId,
+        (SELECT d.name FROM t_user_department ud , t_department d WHERE ud.user_id = t.id AND ud.dep_id = d.id LIMIT 1) departmentName
+        FROM t_user t
+        WHERE t.enable in (0 , 1)
+        <if test="departmentId != null and departmentId !=''">
+            AND t.id IN(
+              SELECT ud.`user_id` FROM t_user_department ud
+              WHERE ud.`dep_id` = #{departmentId}
+            )
+        </if>
+        <if test="deptIds != null and deptIds.size() > 0">
+             and t.id IN(
+              SELECT ud.`user_id` FROM t_user_department ud
+              WHERE ud.`dep_id` in
+               <foreach collection="deptIds" item="item" open="(" close=")"  separator=",">
+	              #{item}
+	           </foreach>
+            )
+       	</if>
+        <if test="userId != null">
+            AND t.`id` = #{userId}
+        </if>
+        <if test="name != null and name != ''">
+            and t.NAME like concat('%',#{name},'%')
+        </if>
+        <if test="account != null and account != ''">
+        	and t.account like concat('%',#{account},'%')
+        </if>
+        <if test="sysroleId != null and sysroleId != ''">
+            and t.id in (
+              select user_id from t_user_sysrole where role_id = #{sysroleId}
+            )
+        </if>
+        <if test="resourceRoleId != null and resourceRoleId != ''">
+            and t.id in (
+              select user_id from t_user_resourcerole where resourcerole_id = #{resourceRoleId}
+            )
+        </if>
+        <if test="userIds != null">
+            <foreach collection="userIds" open=" and t.id in (" close=")" item="item" separator=",">
+                #{item}
+            </foreach>
+        </if>
+        <!--权限预案已关联用户id-->
+        <if test="permissionplanId != null">
+            and t.id in (
+              SELECT u.`user_id` FROM `t_permissionplan_user` u WHERE u.`perssionplan_id` = #{permissionplanId}
+            )
+        </if>
+
+        <!--当前操作用户的部门及可管理部门权限-->
+        <if test="isDepartmentExt and !isAdmin and loginUserId != ''">
+            AND t.id in (
+                SELECT t1.id  FROM t_user t1 , t_user_department t2
+                WHERE t1.`id` = t2.`user_id`
+                AND t2.`dep_id` IN (
+                    SELECT d1.`dep_id` FROM t_user_department d1 WHERE d1.`user_id` = #{loginUserId}
+                    UNION ALL
+                    SELECT d2.`department_id` FROM t_user_department_data d2 WHERE d2.`user_id` = #{loginUserId}
+                )
+            )
+        </if>
+
+        order by t.create_time desc
+    </select>
+
+    <!--查询可管理部门的用户id列表-->
+    <select id="selectAuthUserIds" resultType="string">
+        SELECT t1.id  FROM t_user t1 , t_user_department t2
+        <where>
+            AND t1.`id` = t2.`user_id`
+            AND t2.`dep_id` IN (
+                SELECT d1.`dep_id` FROM t_user_department d1 WHERE d1.`user_id` = #{userId}
+                UNION ALL
+                SELECT d2.`department_id` FROM t_user_department_data d2 WHERE d2.`user_id` = #{userId}
+            )
+        </where>
+    </select>
+
+    <!-- 当前登录用户的地址树摄像机权限 -->
+    <select id="selectAddrCameraPermission" parameterType="java.lang.String" resultType="com.hdvon.nmp.vo.UserAddrCameraPermissionVo">
+	    SELECT addr.id,addr.`name`,addr.pid,null as deviceId,null as permissionValue,null as sbbm
+		FROM t_user AS u ,t_user_resourcerole AS ur ,t_resourcerole AS r ,t_resourcerole_camera_permission AS rap ,t_address addr
+		  where u.id=ur.user_id and ur.resourcerole_id=r.id and r.id=rap.resoucerole_id and addr.id=rap.camera_id and u.id=#{userId}
+		UNION ALL
+		SELECT CONCAT('d_',device.id) as id,device.SBMC,cm.address_id,device.id, rap.permission_value,device.SBBM as sbbm
+		FROM t_device device,t_camera_mapping cm, t_camera  camera ,t_user AS u ,t_user_resourcerole AS ur ,t_resourcerole AS r ,t_resourcerole_camera_permission AS rap
+		  where device.id=camera.device_id and camera.id=cm.camera_id and
+		  u.id=ur.user_id and ur.resourcerole_id=r.id and r.id=rap.resoucerole_id and rap.camera_id=device.id and u.id=#{userId}
+		  ORDER BY sbbm
+    </select>
+	<!-- 查询权限预案关联的用户 -->
+	<select id="selectUsersInPermissionPlan" parameterType="map" resultMap="BaseResultMap">
+		select 
+			<include refid="Customer_Column_List"/>,p.perssionplan_id
+		from 
+			t_user t,t_permissionplan_user p
+		where
+			p.perssionplan_id=#{permissionplanId}
+			and t.id=p.user_id
+	</select>
+
+	<!-- 通过通知公告查找收件人信息 -->
+	<select id="queryUserByNoticeId" parameterType="java.lang.String" resultMap="BaseResultMap">
+      SELECT U.*
+      FROM t_user_notice UN ,t_user U
+      <where>
+         <if test="id != null and id != ''">
+             U.id = UN.user_Id and UN.notice_Id = #{id}
+         </if>
+      </where>
+ 	</select>
+
+    <!--登录成功后获取用户的详细信息-->
+    <select id="login" parameterType="java.lang.String" resultMap="BaseResultMap">
+        SELECT <include refid="Customer_Column_List"></include>,
+        (SELECT DISTINCT D.id FROM t_user_department UD, t_department D WHERE UD.user_id = t.id AND UD.dep_id = D.id) departmentId,
+        (SELECT DISTINCT D1.name FROM t_user_department UD1 , t_department D1 WHERE UD1.user_id = t.id AND UD1.dep_id = D1.id) departmentName,
+        (SELECT DISTINCT D2.dep_code_split FROM t_user_department UD2 , t_department D2 WHERE UD2.user_id = t.id AND UD2.dep_id = D2.id) depCodeSplit
+        FROM t_user t
+        <where>
+            <if test="account != null and account != ''">
+                t.account = #{account}
+            </if>
+            <if test="enable != null">
+                and t.enable != #{enable}
+            </if>
+            <if test="password != null and password != ''">
+                and t.password = #{password}
+            </if>
+        </where>
+    </select>
+
+    <!-- 长时间不登录系统用户 -->
+    <select id="selectStaticUserByParam" parameterType="map" resultMap="BaseResultMap">
+        SELECT
+        <include refid="Customer_Column_List"></include>,
+        (SELECT d.name FROM t_user_department ud , t_department d WHERE ud.user_id = t.id AND ud.dep_id = d.id limit 1) departmentName,
+        datediff(DATE_FORMAT(now(),'%Y%m%d%H%i%s'),DATE_FORMAT(t.last_login_date,'%Y%m%d%H%i%s')) as last_login
+        FROM t_user t
+        WHERE t.enable in (0 , 1)
+        <if test="departmentId != null and departmentId !=''">
+            AND t.id IN(
+              SELECT ud.`user_id` FROM t_user_department ud
+              WHERE ud.`dep_id` = #{departmentId}
+            )
+        </if>
+        <if test="account != null and account != ''">
+          and  t.account like concat('%',#{account},'%')
+        </if>
+        GROUP BY id 
+         <if test="timeDate != null and timeDate != ''">
+          HAVING last_login > #{timeDate}
+        </if>
+        order by last_login  desc
+    </select>
+    
+    <!-- 导出部门用户-->
+    <select id="selectDepartmentUserCount" parameterType="map" resultMap="BaseResultMap">
+      select u.name,u.account,u.card_id, u.mobile_phone,u.last_login_date, 
+	  (SELECT d.name from t_department d where dep.id=d.id limit 1)as departmentName,
+      (SELECT d.name from t_department d where dep.pid=d.id limit 1)as parentDepName
+	  FROM t_user u,t_user_department ud ,t_department dep
+	  where u.id=ud.user_id and ud.dep_id =dep.id
+	  <if test="departmentIds !=null and departmentIds.size() > 0">
+	   and (
+	   <foreach collection="departmentIds" open=" dep.id IN(" close=")" item="item" separator=",">
+	       #{item}
+	   </foreach>
+	   or 
+	   <foreach collection="departmentIds" open=" dep.pid IN(" close=")" item="item" separator=",">
+	       #{item}
+	   </foreach>
+	   )
+	  </if>
+     GROUP BY u.id
+    
+    </select>
+    
+    <!-- 角色下的用户 -->
+    <select id="selectRoleUserCount" parameterType="map" resultType="java.util.HashMap">
+		select u.id,u.name,u.account,u.card_id, u.mobile_phone,u.last_login_date,role.`name` as roleName,
+		(SELECT s.name from t_sysrole s where s.pid=role.id LIMIT 1)as parentName
+		from t_user u,t_user_sysrole urole,t_sysrole role
+		where u.id=urole.user_id and urole.role_id =role.id
+		and u.`enable` !='-1'
+	    <if test="roleIds !=null and roleIds.size() > 0">
+	     and (
+		   <foreach collection="roleIds" open="  role.id IN(" close=")" item="item" separator=",">
+		       #{item}
+		   </foreach>
+		     or
+		   <foreach collection="roleIds" open=" and role.pid IN(" close=")" item="item" separator=",">
+		       #{item}
+		   </foreach>
+		   )
+	   </if>
+	  GROUP BY u.id
+    </select>
+    
+</mapper>

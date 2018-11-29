@@ -1,0 +1,8 @@
+com\hdvon\face\container\CustomApplicationContextInitializer.class
+com\hdvon\FaceLogin\HDFaceSDK_JNI_GPU.class
+com\hdvon\face\utils\Base64Util.class
+com\hdvon\face\service\FaceServiceImpl.class
+com\hdvon\FaceLogin\HDFaceSDK_JNI_CPU.class
+com\hdvon\FaceLogin\HDFaceInfo.class
+com\hdvon\face\utils\CommonUtils.class
+com\hdvon\face\NmpFaceApp.class

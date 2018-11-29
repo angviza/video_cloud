@@ -1,0 +1,47 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<!DOCTYPE mapper PUBLIC "-//mybatis.org//DTD Mapper 3.0//EN" "http://mybatis.org/dtd/mybatis-3-mapper.dtd">
+<mapper namespace="com.hdvon.nmp.mapper.DevicecodeDictionaryMapper">
+  <resultMap id="BaseResultMap" type="com.hdvon.nmp.vo.DevicecodeDictionaryVo">
+    <id column="id" jdbcType="VARCHAR" property="id" />
+    <result column="position" jdbcType="VARCHAR"  property="position" />
+    <result column="code" jdbcType="VARCHAR"  property="code" />
+    <result column="name" jdbcType="VARCHAR"  property="name" />
+    <result column="p_code" jdbcType="VARCHAR"  property="pcode" />
+    <result column="is_reserved" jdbcType="INTEGER"  property="isReserved" />
+    <result column="pid" jdbcType="VARCHAR" property="pid" />
+    <result column="level" jdbcType="VARCHAR" property="level" />
+    <!--<result column="create_time" jdbcType="TIMESTAMP"  property="createTime" />-->
+    <!--<result column="update_time" jdbcType="TIMESTAMP"  property="updateTime" />-->
+    <!--<result column="create_user" jdbcType="VARCHAR"  property="createUser" />-->
+    <!--<result column="update_user" jdbcType="VARCHAR"  property="updateUser" />-->
+  </resultMap>
+
+  <sql id="Customer_Column_List">
+    t.id,t.position,t.code,t.name,t.p_code,t.is_reserved,t.pid,t.level
+  </sql>
+  
+  <select id="selectByParam" parameterType="map" resultMap="BaseResultMap">
+      select <include refid="Customer_Column_List"></include> from t_devicecode_dictionary t
+      <where>
+      		<if test="pid != null and pid !=''">
+             and t.pid=#{pid}
+          </if>
+          <if test="pCode != null and pCode !=''">
+             and t.p_code=#{pCode}
+          </if>
+          <if test="isReserved != null and isReserved !=''">
+             and t.is_reserved !=#{isReserved}
+          </if>
+           <if test="ispCode != null and ispCode !=''">
+             and t.p_code=''
+          </if>
+      </where>
+</select>
+
+<select id="selectAddrList" parameterType="java.util.List" resultMap="BaseResultMap">
+     select <include refid="Customer_Column_List"></include> from t_devicecode_dictionary t
+      where t.position in ('1,2','1,2,3,4','1,2,3,4,5,6','7,8')
+       and t.is_reserved !='1'
+</select>
+
+</mapper>

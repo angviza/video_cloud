@@ -1,0 +1,84 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<!DOCTYPE mapper PUBLIC "-//mybatis.org//DTD Mapper 3.0//EN" "http://mybatis.org/dtd/mybatis-3-mapper.dtd">
+<mapper namespace="com.hdvon.nmp.mapper.CameragrouopMapper">
+  <resultMap id="BaseResultMap" type="com.hdvon.nmp.vo.CameragrouopVo">
+    <id column="id" jdbcType="VARCHAR" property="id" />
+    <result column="name" jdbcType="VARCHAR"  property="name" />
+    <result column="pid" jdbcType="VARCHAR"  property="pid" />
+    <result column="code" jdbcType="VARCHAR"  property="code" />
+    <result column="description" jdbcType="VARCHAR"  property="description" />
+    <result column="is_private" jdbcType="INTEGER"  property="isPrivate" />
+    <result column="orderby" jdbcType="INTEGER"  property="orderby" />
+    <result column="pcode" jdbcType="VARCHAR"  property="pcode" />
+    <association property="parentName" select="selectParentName" column="pid" />
+  </resultMap>
+
+  <sql id="Customer_Column_List">
+    t.id,t.name,t.pid,t.code,t.description,t.is_private,t.creator_id,t.orderby,t.update_time
+  </sql>
+
+    <select id="selectParentName" resultType="string" >
+        select name from t_cameragrouop where id = #{pid}
+    </select>
+
+    <select id="selectByParam" parameterType="map" resultMap="BaseResultMap">
+        SELECT
+        <include refid="Customer_Column_List"/>,(SELECT `code` FROM t_cameragrouop WHERE id = t.`pid`) as pcode
+        FROM
+        t_cameragrouop t
+        <where>
+	        <if test="groupIds != null and groupIds.size() > 0">
+	                and t.id in
+	                 <foreach collection="groupIds" item="item" open="(" close=")"  separator=",">
+		                #{item}
+		            </foreach>
+	        </if>
+            <if test="pidOrId != null and pidOrId !=''">
+                and (t.pid = #{pidOrId} or t.id = #{pidOrId})
+            </if>
+            <if test="search != null and search != ''">
+                and t.name like concat('%',#{search},'%')
+            </if>
+            <if test="name != null and name != ''">
+                and t.name like concat('%',#{name},'%')
+            </if>
+            <if test="id != null and id != ''">
+                and t.id = #{id}
+            </if>
+            <if test="pollingplanId != null">
+                and t.id in(
+                SELECT pc.`cameragroup_id` FROM t_pollingplan_camera pc
+                <where>
+                    and pc.pollingplan_id= #{pollingplanId}
+                </where>
+                )
+            </if>
+            <if test="wallplanId != null and channelId != null">
+                and t.id in(
+                  SELECT wc.`cameragroup_id` FROM t_wallplan_camera wc
+                  <where>
+                    and wc.wallplan_id= #{wallplanId} AND wc.`matrixchannel_id` = #{channelId}
+                  </where>
+                )
+            </if>
+            <!--<if test="!isAdmin and userId != null">-->
+                <!--and (t.is_private=0 OR t.creator_id=#{userId})-->
+            <!--</if>-->
+        </where>
+        <if test="orderByCreateTime != null">
+          order by t.create_time desc
+        </if>
+    </select>
+
+
+   <select id="selectMaxCode" parameterType="map" resultType="java.lang.String">
+          SELECT MAX(t.code) from t_address t
+          <where>
+             <if test="pid != null and pid != ''">
+    			t.pid = #{pid}
+    		 </if>
+          </where>
+    </select>
+
+
+</mapper>

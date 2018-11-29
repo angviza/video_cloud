@@ -1,0 +1,262 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<!DOCTYPE mapper PUBLIC "-//mybatis.org//DTD Mapper 3.0//EN" "http://mybatis.org/dtd/mybatis-3-mapper.dtd">
+<mapper namespace="com.hdvon.client.mapper.CameraGroupMapper">
+
+
+	<select id="findCameraGroupListByMap" parameterType="com.hdvon.client.vo.CameraMapVo" resultType="com.hdvon.client.vo.EsCameraGroupVo">
+		SELECT
+			a.*, encodeserver.`NAME` AS encoderServerName,
+			address.`name` AS addressName,
+			address.`code` AS addressCode,
+			org.`name` AS orgName,
+			org.org_code AS orgCode,
+			project.`name` AS projectName
+		FROM
+			(
+				SELECT DISTINCT
+					(CONCAT(device.id, cg.id)) AS id,
+					camera.id AS cameraId,
+					device.id AS deviceId,
+					device.SBMC AS deviceName,
+					device.SBBM AS deviceCode,
+					device.SXJLX AS deviceType,
+					CONCAT(device.WD, ',', device.JD) AS location,
+					device.JD AS longitude,
+					device.WD AS latitude,
+					device.AZDZ AS installAddress,
+					device.SBCS AS deviceCompany,
+					device.IPv4 AS ip,
+					device.WZLX AS positionType,
+					device.JSDW AS constructionUnit,
+					device.CJDLB AS collectionCategory,
+					device.SXJGNLX AS functionalType,
+					cm.project_id AS projectId,
+					cm.address_id AS addressId,
+					cm.org_id AS orgId,
+					cm.encoder_server_id AS encoderServerId,
+					cg.id AS groupId,
+					cg.`code` AS groupCode,
+					cg.`name` AS groupName
+				FROM
+					t_camera_cameragroup AS ccg,
+					t_camera as camera,
+					t_cameragrouop as cg,
+					t_device as device,
+					t_camera_mapping as cm
+				WHERE				
+					ccg.camera_id = camera.id
+				AND ccg.cameragroup_id = cg.id
+				AND device.id = camera.device_id
+				AND camera.id = cm.camera_id				
+			    <if test="deviceList != null and deviceList.size() > 0 ">
+			    	 and device.id in
+		            <foreach collection="deviceList" item="item" open="(" close=")"  separator=",">
+		                #{item}
+		            </foreach>			     	
+			    </if>
+			   	<if test="groupId != null and groupId != ''">
+			    	 and cg.id = #{groupId}		            
+			    </if>
+			) a
+		LEFT JOIN t_encoder_server AS encodeserver ON encodeserver.id = a.encoderServerId
+		LEFT JOIN t_project AS project ON project.id = a.projectId
+		LEFT JOIN t_address AS address ON address.id = a.addressId
+		LEFT JOIN t_organization AS org ON org.id = a.orgId
+
+	</select>
+    
+    
+    
+    
+    <select id="findUserCameraGroupListByMap" parameterType="com.hdvon.client.vo.CameraMapVo" resultType="com.hdvon.client.vo.EsUserCameraGroupVo">
+    	SELECT
+			a.*, encodeserver.`NAME` AS encoderServerName,
+			address.`name` AS addressName,
+			address.`code` AS addressCode,
+			org.`name` AS orgName,
+			org.org_code AS orgCode,
+			project.`name` AS projectName
+		FROM
+			(
+				SELECT DISTINCT
+					(
+						CONCAT(device.id, ur.user_id, cg.id)
+					) AS id,
+					camera.id AS cameraId,
+					device.id AS deviceId,
+					device.SBMC AS deviceName,
+					device.SBBM AS deviceCode,
+					device.SXJLX AS deviceType,
+					rap.permission_value AS permissionValue,
+					CONCAT(device.WD, ',', device.JD) AS location,
+					device.JD AS longitude,
+					device.WD AS latitude,
+					device.AZDZ AS installAddress,
+					device.SBCS AS deviceCompany,
+					device.IPv4 AS ip,
+					device.WZLX AS positionType,
+					device.JSDW AS constructionUnit,
+					device.CJDLB AS collectionCategory,
+					device.SXJGNLX AS functionalType,
+					cm.project_id AS projectId,
+					cm.address_id AS addressId,
+					cm.org_id AS orgId,
+					cm.encoder_server_id AS encoderServerId,
+					ur.user_id AS userId,
+					u.account AS account,
+					1 AS permanent,
+					'2018-01-01 00:00:00' AS startDate,
+					'2050-01-01 00:00:00' AS endDate,
+					cg.id AS groupId,
+					cg.`code` AS groupCode,
+					cg.`name` AS groupName
+				FROM
+					t_device AS device,
+					t_camera AS camera,
+					t_camera_mapping AS cm,
+					t_camera_cameragroup AS ccg,
+					t_cameragrouop AS cg,
+					t_user_resourcerole AS ur,
+					t_resourcerole AS r,
+					t_resourcerole_camera_permission AS rap,
+					t_user u
+				WHERE
+					device.id = camera.device_id
+				AND camera.id = cm.camera_id
+				AND ccg.camera_id = camera.id
+				AND ccg.cameragroup_id = cg.id
+				AND u.id = ur.user_id
+				AND ur.resourcerole_id = r.id
+				AND r.id = rap.resoucerole_id
+				AND rap.camera_id = camera.id
+				<if test="resRoleId != null and resRoleId!='' ">
+					AND r.id=#{resRoleId}
+				</if>
+				<if test="account != '' and account != null ">
+					and cg.create_user=#{account}
+				</if>
+				<if test="deviceList != null and deviceList.size() > 0 ">
+				 	and device.id in
+		            <foreach collection="deviceList" item="item" open="(" close=")"  separator=",">
+		                #{item}
+		            </foreach>
+				</if>
+				<if test="userList != null and userList.size() > 0  ">
+				 	and u.id in 
+		            <foreach collection="userList" item="item" open="(" close=")"  separator=",">
+		                #{item}
+		            </foreach> 
+				</if>
+				<if test="groupId != null and groupId != ''">
+					and cg.id = #{groupId}					
+				</if>
+			) a
+		LEFT JOIN t_encoder_server AS encodeserver ON encodeserver.id = a.encoderServerId
+		LEFT JOIN t_project AS project ON project.id = a.projectId
+		LEFT JOIN t_address AS address ON address.id = a.addressId
+		LEFT JOIN t_organization AS org ON org.id = a.orgId
+			
+		</select>
+    
+
+      <!-- 预案摄像机分组 -->
+       <select id="findUserCameraGroupListByPlan" parameterType="com.hdvon.client.vo.CameraMapVo" resultType="com.hdvon.client.vo.EsUserCameraGroupVo">
+	       SELECT
+			a.*, encodeserver.`NAME` AS encoderServerName,
+			address.`name` AS addressName,
+			address.`code` AS addressCode,
+			org.`name` AS orgName,
+			org.org_code AS orgCode,
+			project.`name` AS projectName
+		FROM
+			(
+		    SELECT DISTINCT
+			(CONCAT(device.id, pp.user_id, cg.id)) AS id,
+			camera.id AS cameraId,
+			device.id AS deviceId,
+			device.SBMC AS deviceName,
+			device.SBBM AS deviceCode,
+			device.SXJLX AS deviceType,
+			rap.permission_value AS permissionValue,
+			CONCAT(device.WD, ',', device.JD) AS location,
+			device.JD AS longitude,
+			device.WD AS latitude,
+			device.AZDZ AS installAddress,
+			device.SBCS AS deviceCompany,
+			device.IPv4 AS ip,
+			device.WZLX AS positionType,
+			device.JSDW AS constructionUnit,
+			device.CJDLB AS collectionCategory,
+			device.SXJGNLX AS functionalType,
+			cg.id AS groupId,
+			cg.`code` AS groupCode,
+			cg. NAME AS groupName,
+			cm.project_id AS projectId,
+			cm.address_id AS addressId,
+			cm.org_id AS orgId,
+			cm.encoder_server_id AS encoderServerId,
+			pp.user_id AS userId,
+			pp.account AS account,
+			2 AS permanent,
+			pp.bgn_time1 as startDate,
+			pp.end_time1 as endDate
+		FROM
+			t_permission_plan pp,
+			t_permissionplan_resourcerole pr,
+			t_resourcerole AS r,
+			t_resourcerole_camera_permission AS rap,
+			t_device device,
+			t_camera AS camera,
+			t_camera_mapping cm,
+			t_camera_cameragroup AS ccg,
+			t_cameragrouop AS cg,
+			 (
+				SELECT USER.id as user_id, `user`.account,plan.id as plan_id ,plan.bgn_time as bgn_time1,plan.end_time as end_time1
+				FROM t_user USER,t_permissionplan_user puser, t_permission_plan plan 
+				WHERE puser.user_id = `user`.id and puser.perssionplan_id=plan.id and plan.user_status = 9
+		        AND plan.STATUS = 1 AND <![CDATA[now() <= plan.end_time ]]>
+			     <if test="planId !=null and planId !='' ">
+			          AND plan.id = #{planId}
+			      </if> 
+			      <if test="userList != null and userList.size() > 0 ">
+				    and	user.id in
+					<foreach collection="userList" item="item" open="(" close=")"  separator=",">
+			        	#{item}
+			        </foreach>	
+				</if> 
+				GROUP BY user_id,plan_id
+			) pp
+		WHERE
+		 pp.plan_id =pr.permissionplan_id
+	    AND pr.resourcerole_id = r.id
+		AND r.id = rap.resoucerole_id
+		AND camera.device_id = device.id
+		AND rap.camera_id = camera.id
+		AND camera.id = cm.camera_id
+		AND ccg.camera_id = camera.id
+		AND ccg.cameragroup_id = cg.id
+		<if test="deviceList != null and deviceList.size() > 0 ">
+		     and device.id in
+			<foreach collection="deviceList" item="item" open="(" close=")"  separator=",">
+	        	#{item}
+	        </foreach>	
+	     </if>
+	     <if test="devices != null and devices.size() > 0 ">
+		     and device.id in
+			<foreach collection="devices" item="item" open="(" close=")"  separator=",">
+	        	#{item}
+	        </foreach>	
+	     </if>
+	     <if test="groupId !=null and groupId !='' ">
+	         and cg.id =#{groupId}
+	      </if>
+	      <if test="noEqRoleId !=null and noEqRoleId !='' ">
+	         and r.id !=#{noEqRoleId}
+	      </if>
+		) a
+	LEFT JOIN t_encoder_server AS encodeserver ON encodeserver.id = a.encoderServerId
+	LEFT JOIN t_project AS project ON project.id = a.projectId
+	LEFT JOIN t_address AS address ON address.id = a.addressId
+	LEFT JOIN t_organization AS org ON org.id = a.orgId
+    </select>
+</mapper>

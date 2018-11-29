@@ -1,0 +1,418 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<!DOCTYPE mapper PUBLIC "-//mybatis.org//DTD Mapper 3.0//EN" "http://mybatis.org/dtd/mybatis-3-mapper.dtd">
+<mapper namespace="com.hdvon.nmp.mapper.DeviceMapper">
+  <resultMap id="BaseResultMap" type="com.hdvon.nmp.vo.DeviceVo">
+    <id column="id" jdbcType="VARCHAR" property="id" />
+    <result column="registered_name" jdbcType="VARCHAR" property="registeredName"/>
+    <result column="registered_pass" jdbcType="VARCHAR" property="registeredPass"/>
+    <result column="registered_server_port" jdbcType="INTEGER" property="registeredServerPort"/>
+    <result column="SBBM" jdbcType="VARCHAR"  property="sbbm" />
+    <result column="SBMC" jdbcType="VARCHAR"  property="sbmc" />
+    <result column="XZQH" jdbcType="VARCHAR"  property="xzqh" />
+    <result column="ParentID" jdbcType="VARCHAR"  property="parentId" />
+    <result column="Parental" jdbcType="INTEGER"  property="parental" />
+    <result column="buss_group_id" jdbcType="VARCHAR"  property="bussGroupId" />
+    <result column="SBCS" jdbcType="INTEGER"  property="sbcs" />
+    <result column="SXJLX" jdbcType="INTEGER"  property="sxjlx" />
+    <result column="QDSBXH" jdbcType="VARCHAR"  property="qdsbxh" />
+    <result column="SBSX" jdbcType="INTEGER"  property="sbsx" />
+    <result column="SXJGNLX" jdbcType="INTEGER"  property="sxjgnlx" />
+    <result column="BGSX" jdbcType="INTEGER"  property="bgsx" />
+    <result column="ZNFX" jdbcType="INTEGER"  property="znfx" />
+    <result column="CJDLB" jdbcType="INTEGER"  property="cjdlb" />
+    <result column="LXCCWZ" jdbcType="VARCHAR"  property="lxccwz" />
+    <result column="CCTGYYSBM" jdbcType="INTEGER"  property="cctgyysbm" />
+    <result column="CCTGYYSMC" jdbcType="VARCHAR"  property="cctgyysmc" />
+    <result column="CCTGYYSJFDZ" jdbcType="VARCHAR"  property="cctgyysjfdz" />
+    <result column="LXCCSBIP" jdbcType="VARCHAR"  property="lxccsbip" />
+    <result column="LXCCSBGBID" jdbcType="VARCHAR"  property="lxccsbgbid" />
+    <result column="LXCCSBMC" jdbcType="VARCHAR"  property="lxccsbmc" />
+    <result column="LXCCSDLYHM" jdbcType="VARCHAR"  property="lxccsdlyhm" />
+    <result column="LXCCSBDLMM" jdbcType="VARCHAR"  property="lxccsbdlmm" />
+    <result column="LXCCSBDKH" jdbcType="VARCHAR"  property="lxccsbdkh" />
+    <result column="LXCCSBZTDS" jdbcType="INTEGER"  property="lxccsbztds" />
+    <result column="CCXTTDH" jdbcType="INTEGER"  property="ccxttdh" />
+    <result column="LXCCSBCJ" jdbcType="INTEGER"  property="lxccsbcj" />
+    <result column="LXCCSBLX" jdbcType="INTEGER"  property="lxccsblx" />
+    <result column="Block" jdbcType="VARCHAR"  property="block" />
+    <result column="AZDZ" jdbcType="VARCHAR"  property="azdz" />
+    <result column="MPDZ" jdbcType="VARCHAR"  property="mpdz" />
+    <result column="LGBH" jdbcType="VARCHAR"  property="lgbh" />
+    <result column="ZBBZ" jdbcType="VARCHAR"  property="zbbz" />
+    <result column="JD" jdbcType="DOUBLE"  property="jd" />
+    <result column="WD" jdbcType="DOUBLE"  property="wd" />
+    <result column="WZLX" jdbcType="INTEGER"  property="wzlx" />
+    <result column="AZFS" jdbcType="INTEGER"  property="azfs" />
+    <result column="GG" jdbcType="VARCHAR"  property="gg" />
+    <result column="BC" jdbcType="VARCHAR"  property="bc" />
+    <result column="HBFX" jdbcType="VARCHAR"  property="hbfx" />
+    <result column="QDFS" jdbcType="VARCHAR"  property="qdfs" />
+    <result column="SYMS" jdbcType="VARCHAR"  property="syms" />
+    <result column="JKFWJT" jdbcType="VARCHAR"  property="jkfwjt" />
+    <result column="JKSJ" jdbcType="VARCHAR"  property="jksj" />
+    <result column="SNWSX" jdbcType="INTEGER"  property="snwsx" />
+    <result column="SXJJKFW" jdbcType="INTEGER"  property="sxjjkfw" />
+    <result column="GLSXJ" jdbcType="VARCHAR"  property="glsxj" />
+    <result column="SFGG" jdbcType="INTEGER"  property="sfgg" />
+    <result column="SafetyWay" jdbcType="INTEGER"  property="safetyWay" />
+    <result column="RegisterWay" jdbcType="INTEGER"  property="registerWay" />
+    <result column="Secrecy" jdbcType="INTEGER"  property="secrecy" />
+    <result column="CertNum" jdbcType="VARCHAR"  property="certNum" />
+    <result column="Certifiable" jdbcType="INTEGER"  property="certifiable" />
+    <result column="ErrCode" jdbcType="INTEGER"  property="errCode" />
+    <result column="EndTime" jdbcType="TIMESTAMP"  property="endTime" />
+    <result column="LWSX" jdbcType="INTEGER"  property="lwsx" />
+    <result column="JRWL" jdbcType="INTEGER"  property="jrwl" />
+    <result column="IPv4" jdbcType="VARCHAR"  property="ipv4" />
+    <result column="IPv6" jdbcType="VARCHAR"  property="ipv6" />
+    <result column="MacAddress" jdbcType="VARCHAR"  property="macAddress" />
+    <result column="Port" jdbcType="INTEGER"  property="port" />
+    <result column="SBYHM" jdbcType="VARCHAR"  property="sbyhm" />
+    <result column="Password" jdbcType="VARCHAR"  property="password" />
+    <result column="GATEWAYIP" jdbcType="VARCHAR"  property="gatewayip" />
+    <result column="GATEWAYDOMAIN" jdbcType="VARCHAR"  property="gatewaydomain" />
+    <result column="GATEWAYID" jdbcType="VARCHAR"  property="gatewayid" />
+    <result column="OSLOGINNAME" jdbcType="VARCHAR"  property="osloginname" />
+    <result column="OSLOGINKEY" jdbcType="VARCHAR"  property="osloginkey" />
+    <result column="QYSJ" jdbcType="TIMESTAMP"  property="qysj" />
+    <result column="BFSJ" jdbcType="TIMESTAMP"  property="bfsj" />
+    <result column="AZSJ" jdbcType="TIMESTAMP"  property="azsj" />
+    <result column="SBZT" jdbcType="INTEGER"  property="sbzt" />
+    <result column="SPDS" jdbcType="INTEGER"  property="spds" />
+    <result column="SCSZ" jdbcType="INTEGER"  property="scsz" />
+    <result column="SPMH" jdbcType="INTEGER"  property="spmh" />
+    <result column="LDYC" jdbcType="INTEGER"  property="ldyc" />
+    <result column="SPGR" jdbcType="INTEGER"  property="spgr" />
+    <result column="SPKD" jdbcType="INTEGER"  property="spkd" />
+    <result column="SPZD" jdbcType="INTEGER"  property="spzd" />
+    <result column="CJBG" jdbcType="INTEGER"  property="cjbg" />
+    <result column="ZXSC" jdbcType="INTEGER"  property="zxsc" />
+    <result column="LXSC" jdbcType="INTEGER"  property="lxsc" />
+    <result column="XLSY" jdbcType="INTEGER"  property="xlsy" />
+    <result column="SPLSY" jdbcType="INTEGER"  property="splsy" />
+    <result column="GJZSY" jdbcType="INTEGER"  property="gjzsy" />
+    <result column="LXBCTS" jdbcType="INTEGER"  property="lxbcts" />
+    <result column="DownloadSpeed" jdbcType="VARCHAR"  property="downloadSpeed" />
+    <result column="Filepath" jdbcType="VARCHAR"  property="filepath" />
+    <result column="RecordAddress" jdbcType="VARCHAR"  property="recordAddress" />
+    <result column="SVCSpaceSupportMode" jdbcType="INTEGER"  property="svcspaceSupportMode" />
+    <result column="SVCTimeSupportMode" jdbcType="INTEGER"  property="svctimeSupportMode" />
+    <result column="VideoEncodeType" jdbcType="INTEGER"  property="videoEncodeType" />
+    <result column="Resolution" jdbcType="INTEGER"  property="resolution" />
+    <result column="FrameRate" jdbcType="INTEGER"  property="frameRate" />
+    <result column="VideoCodeType" jdbcType="INTEGER"  property="videoCodeType" />
+    <result column="VideoCodeRate" jdbcType="INTEGER"  property="videoCodeRate" />
+    <result column="StreamType" jdbcType="INTEGER"  property="streamType" />
+    <result column="Pickup" jdbcType="INTEGER"  property="pickup" />
+    <result column="AudioEncodeType" jdbcType="INTEGER"  property="audioEncodeType" />
+    <result column="AudioCodeRate" jdbcType="INTEGER"  property="audioCodeRate" />
+    <result column="AudioSampleRate" jdbcType="INTEGER"  property="audioSampleRate" />
+    <result column="JKDWLX" jdbcType="INTEGER"  property="jkdwlx" />
+    <result column="JSLX" jdbcType="INTEGER"  property="jslx" />
+    <result column="TZDW" jdbcType="VARCHAR"  property="tzdw" />
+    <result column="JSDW" jdbcType="VARCHAR"  property="jsdw" />
+    <result column="JSDWDM" jdbcType="INTEGER"  property="jsdwdm" />
+    <result column="SSXMBH" jdbcType="VARCHAR"  property="ssxmbh" />
+    <result column="SSXMMC" jdbcType="VARCHAR"  property="ssxmmc" />
+    <result column="SXJSSBM" jdbcType="INTEGER"  property="sxjssbm" />
+    <result column="SSPCS" jdbcType="VARCHAR"  property="sspcs" />
+    <result column="SSJD" jdbcType="VARCHAR"  property="ssjd" />
+    <result column="CJDW" jdbcType="VARCHAR"  property="cjdw" />
+    <result column="WHDW" jdbcType="VARCHAR"  property="whdw" />
+    <result column="WHR" jdbcType="VARCHAR"  property="whr" />
+    <result column="WHRSJ" jdbcType="VARCHAR"  property="whrsj" />
+    <result column="XGR" jdbcType="VARCHAR"  property="xgr" />
+    <result column="XGSJ" jdbcType="TIMESTAMP"  property="xgsj" />
+  </resultMap>
+
+  <sql id="Customer_Column_List">
+    t.id,t.SBBM,t.SBMC,t.XZQH,t.ParentID,t.Parental,t.buss_group_id,t.SBCS,t.SXJLX,t.QDSBXH,t.SBSX,t.SXJGNLX,t.BGSX,t.ZNFX,t.CJDLB,t.LXCCWZ,t.CCTGYYSBM,t.CCTGYYSMC,t.CCTGYYSJFDZ,t.LXCCSBIP,t.LXCCSBGBID,t.LXCCSBMC,t.LXCCSDLYHM,t.LXCCSBDLMM,t.LXCCSBDKH,t.LXCCSBZTDS,t.CCXTTDH,t.LXCCSBCJ,t.LXCCSBLX,t.Block,t.AZDZ,t.MPDZ,t.LGBH,t.ZBBZ,t.JD,t.WD,t.WZLX,t.AZFS,t.GG,t.BC,t.HBFX,t.QDFS,t.SYMS,t.JKFWJT,t.JKSJ,t.SNWSX,t.SXJJKFW,t.GLSXJ,t.SFGG,t.SafetyWay,t.RegisterWay,t.Secrecy,t.CertNum,t.Certifiable,t.ErrCode,t.EndTime,t.LWSX,t.JRWL,t.IPv4,t.IPv6,t.MacAddress,t.Port,t.SBYHM,t.Password,t.GATEWAYIP,t.GATEWAYDOMAIN,t.GATEWAYID,t.OSLOGINNAME,t.OSLOGINKEY,t.QYSJ,t.BFSJ,t.AZSJ,t.SBZT,t.SPDS,t.SCSZ,t.SPMH,t.LDYC,t.SPGR,t.SPKD,t.SPZD,t.CJBG,t.ZXSC,t.LXSC,t.XLSY,t.SPLSY,t.GJZSY,t.LXBCTS,t.DownloadSpeed,t.Filepath,t.RecordAddress,t.SVCSpaceSupportMode,t.SVCTimeSupportMode,t.VideoEncodeType,t.Resolution,t.FrameRate,t.VideoCodeType,t.VideoCodeRate,t.StreamType,t.Pickup,t.AudioEncodeType,t.AudioCodeRate,t.AudioSampleRate,t.JKDWLX,t.JSLX,t.TZDW,t.JSDW,t.JSDWDM,t.SSXMBH,t.SSXMMC,t.SXJSSBM,t.SSPCS,t.SSJD,t.CJDW,t.WHDW,t.WHR,t.WHRSJ,t.XGR,t.XGSJ
+  </sql>
+  
+  <sql id="Customer_Vo_List">
+    t.id,t.SBBM,t.SBMC,t.XZQH,t.ParentID,t.Parental,t.buss_group_id as bussGroupId,t.SBCS,t.SXJLX,t.QDSBXH,t.SBSX,t.SXJGNLX,t.BGSX,t.ZNFX,t.CJDLB,t.LXCCWZ,t.CCTGYYSBM,t.CCTGYYSMC,t.CCTGYYSJFDZ,t.LXCCSBIP,t.LXCCSBGBID,t.LXCCSBMC,t.LXCCSDLYHM,t.LXCCSBDLMM,t.LXCCSBDKH,t.LXCCSBZTDS,t.CCXTTDH,t.LXCCSBCJ,t.LXCCSBLX,t.Block,t.AZDZ,t.MPDZ,t.LGBH,t.ZBBZ,t.JD,t.WD,t.WZLX,t.AZFS,t.GG,t.BC,t.HBFX,t.QDFS,t.SYMS,t.JKFWJT,t.JKSJ,t.SNWSX,t.SXJJKFW,t.GLSXJ,t.SFGG,t.SafetyWay,t.RegisterWay,t.Secrecy,t.CertNum,t.Certifiable,t.ErrCode,t.EndTime,t.LWSX,t.JRWL,t.IPv4,t.IPv6,t.MacAddress,t.Port,t.SBYHM,t.Password,t.GATEWAYIP,t.GATEWAYDOMAIN,t.GATEWAYID,t.OSLOGINNAME,t.OSLOGINKEY,t.QYSJ,t.BFSJ,t.AZSJ,t.SBZT,t.SPDS,t.SCSZ,t.SPMH,t.LDYC,t.SPGR,t.SPKD,t.SPZD,t.CJBG,t.ZXSC,t.LXSC,t.XLSY,t.SPLSY,t.GJZSY,t.LXBCTS,t.DownloadSpeed,t.Filepath,t.RecordAddress,t.SVCSpaceSupportMode,t.SVCTimeSupportMode,t.VideoEncodeType,t.Resolution,t.FrameRate,t.VideoCodeType,t.VideoCodeRate,t.StreamType,t.Pickup,t.AudioEncodeType,t.AudioCodeRate,t.AudioSampleRate,t.JKDWLX,t.JSLX,t.TZDW,t.JSDW,t.JSDWDM,t.SSXMBH,t.SSXMMC,t.SXJSSBM,t.SSPCS,t.SSJD,t.CJDW,t.WHDW,t.WHR,t.WHRSJ,t.XGR,t.XGSJ
+  </sql>
+  
+  <select id="selectByParam" parameterType="map" resultMap="BaseResultMap">
+      select <include refid="Customer_Column_List"></include> from t_device t
+      <where>
+          <if test="sbbm != null and sbbm !=''">
+             and t.sbbm=#{sbbm}
+          </if>
+           <if test="bussGroupId != null and bussGroupId !=''">
+             and t.buss_group_id=#{bussGroupId}
+          </if>
+          <if test="deviceCodes != null and deviceCodes.size() > 0">
+             and t.sbbm in 
+             <foreach collection="deviceCodes" item="item" open="(" close=")"  separator=",">
+            	#{item}
+        	</foreach>
+          </if>
+      </where>
+  </select>
+  <sql id="selectParam">
+        <if test="sbbm != null and sbbm != ''">
+	       and t.sbbm like concat('%',#{sbbm},'%')
+	    </if>
+	    <if test="sbmc != null and sbmc != ''">
+	       and t.sbmc like concat('%',#{sbmc},'%')
+	    </if>
+	    <if test="jsdw != null and jsdw != ''">
+	       and t.jsdw = #{jsdw}
+	    </if>
+	    <if test="cjdw != null and cjdw != ''">
+	       and t.cjdw = #{cjdw}
+	    </if>
+	    <if test="sbcs != null and sbcs != ''">
+	       and t.sbcs=#{sbcs}
+	    </if>
+	    <if test="sxjlx != null and sxjlx != ''">
+	       and t.sxjlx=#{sxjlx}
+	    </if>
+	    <if test="bgsx != null and bgsx != ''">
+	       and t.bgsx=#{bgsx}
+	    </if>
+	    <if test="wzlx != null and wzlx != ''">
+	       and t.wzlx=#{wzlx}
+	    </if>
+	    <if test="sxjssbm != null and sxjssbm != ''">
+	       and t.sxjssbm=#{sxjssbm}
+	    </if>
+	    <if test="cameraIp != null and cameraIp != ''" >
+	       and t.ipv4 like concat('%',#{cameraIp},'%')
+	    </if>
+	    <if test="jd != null  and jd != ''">
+	       and t.jd like concat('%',#{jd},'%')
+	    </if>
+	    <if test="sbzt != null and sbzt != ''">
+	       and t.sbzt=#{sbzt}
+	    </if>
+	    <if test="sxjgnlx != null and sxjgnlx != ''">
+	       and t.sxjgnlx=#{sxjgnlx}
+	    </if>
+   </sql>
+<!-- 分页查询摄像机 -->
+    <select id="selectDeviceByMapPage" parameterType="com.hdvon.nmp.vo.CameraParamVo" resultType="java.util.HashMap">
+       SELECT
+		 <include refid="Customer_Vo_List"></include>,a.name as addressName, p.name as projectName, bg.name as bussinessName, o.name as orgName,es.name as encoderServerName
+	  FROM
+		t_device t 
+		inner join t_camera ca ON t.id=ca.device_id
+		inner join t_camera_mapping cm ON ca.id=cm.camera_id
+		LEFT JOIN t_encoder_server es on cm.encoder_server_id=es.id
+		LEFT JOIN t_address a ON cm.address_id=a.id
+		LEFT JOIN t_project p ON cm.project_id = p.id
+		LEFT JOIN t_bussiness_group bg ON t.buss_group_id = bg.id
+		LEFT JOIN t_organization o ON cm.org_id = o.id
+	  <where>	
+	    <include refid="selectParam"></include>
+	    <!-- <if test="addressId != null and addressId !=''">
+	       and cm.address_id=#{addressId}
+	    </if> -->
+	    <if test="addressNodeIds != null and addressNodeIds.size() > 0">
+	    	and cm.address_id in
+            <foreach collection="addressNodeIds" item="item" open="(" close=")"  separator=",">
+                #{item}
+            </foreach>
+	    </if>
+	    <if test="encoderServerId != null and encoderServerId !=''">
+	       and cm.encoder_server_id=#{encoderServerId}
+	    </if>
+	    <!-- <if test="projectId != null and projectId !=''">
+	       and cm.project_id=#{projectId}
+	    </if> -->
+	    <if test="projectNodeIds != null and projectNodeIds.size() > 0">
+	    	and cm.project_id in
+            <foreach collection="projectNodeIds" item="item" open="(" close=")"  separator=",">
+                #{item}
+            </foreach>
+	    </if>
+	    <!-- <if test="orgId != null and orgId !=''">
+	       and cm.org_id=#{orgId}
+	    </if> -->
+	    <if test="orgNodeIds != null and orgNodeIds.size() > 0">
+	    	and cm.org_id in
+            <foreach collection="orgNodeIds" item="item" open="(" close=")"  separator=",">
+                #{item}
+            </foreach>
+	    </if>
+	    <!-- <if test="cameraGroupId != null and cameraGroupId !=''">
+	       and ca.id in (SELECT ccg.camera_id from t_camera_cameragroup ccg where ca.id=ccg.camera_id and ccg.cameragroup_id=#{cameraGroupId} )
+	    </if> -->
+	    <if test="groupNodeIds != null and groupNodeIds.size() > 0">
+	    	and ca.id in
+	    	(SELECT 
+	    			ccg.camera_id 
+	    		from 
+	    			t_camera_cameragroup ccg 
+	    		where 
+	    			ca.id=ccg.camera_id 
+	    			and ccg.cameragroup_id in 
+	    			 <foreach collection="groupNodeIds" item="item" open="(" close=")"  separator=",">
+		                #{item}
+		            </foreach>)
+           
+	    </if>
+        <if test="sbbmList != null and sbbmList.size() > 0">
+            and t.sbbm in
+            <foreach collection="sbbmList" item="item" open="(" close=")"  separator=",">
+                #{item}
+            </foreach>
+        </if>
+       </where> 
+    </select>
+    
+    <select id="countCamerasByParam" parameterType="com.hdvon.nmp.vo.CameraParamVo" resultType="java.lang.Integer">
+    	select 
+    		count(*) 
+    	from 
+	    	t_device t 
+			inner join t_camera ca ON t.id=ca.device_id
+			inner join t_camera_mapping cm ON ca.id=cm.camera_id
+	  <where>	
+	    <include refid="selectParam"></include>
+	    <!-- <if test="addressId != null and addressId !=''">
+	       and cm.address_id=#{addressId}
+	    </if> -->
+	    <if test="addressNodeIds != null and addressNodeIds.size() > 0">
+	    	and cm.address_id in
+            <foreach collection="addressNodeIds" item="item" open="(" close=")"  separator=",">
+                #{item}
+            </foreach>
+	    </if>
+	    <if test="encoderServerId != null and encoderServerId !=''">
+	       and cm.encoder_server_id=#{encoderServerId}
+	    </if>
+	    <!-- <if test="projectId != null and projectId !=''">
+	       and cm.project_id=#{projectId}
+	    </if> -->
+	    <if test="projectNodeIds != null and projectNodeIds.size() > 0">
+	    	and cm.project_id in
+            <foreach collection="projectNodeIds" item="item" open="(" close=")"  separator=",">
+                #{item}
+            </foreach>
+	    </if>
+	    <!-- <if test="orgId != null and orgId !=''">
+	       and cm.org_id=#{orgId}
+	    </if> -->
+	    <if test="orgNodeIds != null and orgNodeIds.size() > 0">
+	    	and cm.org_id in
+            <foreach collection="orgNodeIds" item="item" open="(" close=")"  separator=",">
+                #{item}
+            </foreach>
+	    </if>
+	    <!-- <if test="cameraGroupId != null and cameraGroupId !=''">
+	       and ca.id in (SELECT ccg.camera_id from t_camera_cameragroup ccg where ca.id=ccg.camera_id and ccg.cameragroup_id=#{cameraGroupId} )
+	    </if> -->
+	    <if test="groupNodeIds != null and groupNodeIds.size() > 0">
+	    	and ca.id in
+	    	(SELECT 
+	    			ccg.camera_id 
+	    		from 
+	    			t_camera_cameragroup ccg 
+	    		where 
+	    			ca.id=ccg.camera_id 
+	    			and ccg.cameragroup_id in 
+	    			 <foreach collection="groupNodeIds" item="item" open="(" close=")"  separator=",">
+		                #{item}
+		            </foreach>)
+           
+	    </if>
+        <if test="sbbmList != null and sbbmList.size() > 0">
+            and t.sbbm in
+            <foreach collection="sbbmList" item="item" open="(" close=")"  separator=",">
+                #{item}
+            </foreach>
+        </if>
+       </where> 
+    </select>
+  <select id="selectCameraAndDeviceInfo" parameterType="java.lang.String" resultType="com.hdvon.nmp.vo.DeviceParamVo">
+      SELECT
+		c.id as camera_id,c.registered_name as registeredName,c.registered_pass as registeredPass,c.registered_server_port as registeredServerPort,c.hots,c.device_id,c.access_mode accessMode,d.id,d.SBBM,d.SBMC,d.XZQH,d.buss_group_id businessGroupId,
+		cm.address_id as addressId,cm.encoder_server_id as encoderServerId,cm.org_id as orgId,cm.project_id as projectId,
+		d.*,d.IPv4 as cameraIp,
+		(select bg.`name` from t_bussiness_group bg where bg.id = d.buss_group_id) as bussinessGroupName,
+		(select es.`name` From t_encoder_server es where cm.encoder_server_id=es.id) AS encodeServerName,
+		(select a.`name` From t_address a where cm.address_id=a.id) AS addressName,
+		(select p.`name` From t_project p where cm.project_id=p.id) AS projectName,
+		(select o.`name` From t_organization o where cm.org_id=o.id) AS orgName,
+		<!-- (SELECT cg.`name`FROM t_camera_cameragroup ccg ,t_cameragrouop cg where cg.id=ccg.cameragroup_id and ccg.camera_id=c.id) AS grouopName, -->
+		(select cjdwd.name from t_department cjdwd where cjdwd.id = d.cjdw) AS cjdwName,
+		(select jsdwd.name from t_department jsdwd where jsdwd.id = d.jsdw) AS jsdwName
+	 FROM
+		t_device d,
+		t_camera c,
+		t_camera_mapping cm
+	 where
+	    c.device_id=d.id
+		and c.id=cm.camera_id
+		and c.id = #{cameraId}
+    </select>
+
+    <!-- 根据前面指定编码查询最大编码 -->
+    <select id="selectMaxCodeBycode" parameterType="java.lang.String" resultType="java.lang.String">
+       SELECT MAX(sbbm)  from t_device where sbbm like concat(#{sbbm},'%')
+    </select>
+
+ <!-- 查询自定义分组下的摄像机 -->
+    <select id="selectCamerasByGroupId" parameterType="java.lang.String" resultType="com.hdvon.nmp.vo.DeviceVo">
+    	select 
+  		<include refid="Customer_Column_List"/>
+  	from
+  	     t_camera c,t_device t, t_cameragrouop tc, t_camera_cameragroup cc
+  	where 
+  		c.device_id = t.id
+  		and c.id = cc.camera_id
+  		and cc.cameragroup_id = tc.id
+  		and tc.id = #{groupId}
+    </select>
+
+    <!-- 查询存储服务器下的摄像机 -->
+    <select id="selectDeviceByStorageId" parameterType="map" resultType="java.util.HashMap">
+        SELECT
+        <include refid="Customer_Vo_List"></include>
+        FROM
+        t_device t ,t_camera  camera,t_camera_mapping cm ,t_store_server ss,t_storeserver_camera sc
+        <where>
+            ss.id=sc.storeserver_id and camera.id=sc.camera_id and t.id=camera.device_id and camera.id=cm.camera_id
+            <if test="storeserverId != null and storeserverId != ''">
+                and sc.storeserver_id = #{storeserverId}
+            </if>
+            <if test="!isAdmin and userId != null">
+                AND camera.id in (
+                SELECT t.`camera_id` FROM t_resourcerole_camera_permission t , t_user_resourcerole ur
+                WHERE t.`resoucerole_id` = ur.`resourcerole_id`
+                AND ur.`user_id` = #{userId}
+                )
+            </if>
+        </where>
+    </select>
+
+    <!-- 根据存储服务器下的摄像机映射表主键查找摄像机 -->
+    <select id="selectDeviceBystoreCameraId" parameterType="java.lang.String" resultType="com.hdvon.nmp.vo.DeviceVo">
+        SELECT
+        <include refid="Customer_Vo_List"></include>
+        FROM
+        t_device t ,t_camera  camera,t_camera_mapping cm ,t_store_server ss,t_storeserver_camera sc
+        <where>
+            ss.id=sc.storeserver_id and camera.id=sc.camera_id and t.id=camera.device_id and camera.id=cm.camera_id
+            <if test="storeCameraId != null and storeCameraId != ''">
+                and sc.id = #{storeCameraId}
+            </if>
+        </where>
+    </select>
+
+    <!-- 根据摄像机Id查找摄像机设备 -->
+    <select id="selectDeviceByCameraId" parameterType="java.lang.String" resultType="com.hdvon.nmp.vo.DeviceVo">
+        SELECT
+        <include refid="Customer_Vo_List"></include>
+        FROM
+        t_device t ,t_camera  camera
+        <where>
+            <if test="cameraId != null and cameraId != ''">
+                t.id=camera.device_id
+                and camera.id = #{cameraId}
+            </if>
+        </where>
+    </select>
+</mapper>

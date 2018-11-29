@@ -1,0 +1,177 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<!DOCTYPE mapper PUBLIC "-//mybatis.org//DTD Mapper 3.0//EN" "http://mybatis.org/dtd/mybatis-3-mapper.dtd">
+<mapper namespace="com.hdvon.nmp.mapper.PresentPositionMapper">
+    <resultMap id="BaseResultMap" type="com.hdvon.nmp.vo.PresentPositionVo">
+        <id column="id" jdbcType="VARCHAR" property="id" />
+        <result column="name" jdbcType="VARCHAR"  property="name" />
+        <result column="present_no" jdbcType="VARCHAR"  property="presentNo" />
+         <result column="is_keepwatch" jdbcType="INTEGER"  property="isKeepwatch" />
+        <result column="sort" jdbcType="INTEGER"  property="sort" />
+        <result column="camera_id" jdbcType="VARCHAR"  property="cameraId" />
+        <result column="plan_id" jdbcType="VARCHAR"  property="planId" />
+        <result column="present_sort" jdbcType="VARCHAR"  property="presentSort" />
+        <result column="time_interval" jdbcType="VARCHAR"  property="timeInterval" />
+        <result column="status" jdbcType="VARCHAR"  property="status" />
+        <result column="camera_code" jdbcType="VARCHAR"  property="cameraCode" />
+        <!--<result column="create_time" jdbcType="TIMESTAMP"  property="createTime" />-->
+        <!--<result column="update_time" jdbcType="TIMESTAMP"  property="updateTime" />-->
+        <!--<result column="create_user" jdbcType="VARCHAR"  property="createUser" />-->
+        <!--<result column="update_user" jdbcType="VARCHAR"  property="updateUser" />-->
+    </resultMap>
+
+    <sql id="Customer_Column_List">
+        t.id,t.name,t.present_no,t.is_keepwatch,t.sort,t.camera_id,t.camera_code
+    </sql>
+	<sql id="Customer_Relate_List">
+        t.id,t.name,t.present_no,t.is_keepwatch,t.sort,t.camera_id,bpp.sort as present_sort,bpp.time_interval as time_interval
+    </sql>
+    
+    <select id="selectByParam" parameterType="map" resultMap="BaseResultMap">
+      select <include refid="Customer_Column_List"></include> from t_present_position t
+      <where>
+          <if test="cameraId != null and cameraId !=''">
+             and t.camera_id=#{cameraId}
+          </if>
+          <if test="name != null and name !=''">
+             and t.name like concat('%',#{name},'%')
+          </if>
+      </where>
+    </select>
+    
+	<select id="selectPresentsInBallPlan" parameterType = "map" resultMap="BaseResultMap">
+		select
+			<include refid="Customer_Relate_List"/>
+		from 
+			t_present_position t, t_ball_plan bp, t_plan_present bpp,t_camera c,t_device d
+		where
+			t.id = bpp.present_id 
+			and bp.id = bpp.plan_id 
+			and t.camera_id = c.id 
+			and c.device_id = d.id
+			and bp.id = #{ballplanId}
+			and bp.camera_id = #{cameraId} 
+			order by bpp.sort asc
+	</select>
+	<!-- 查询单个轮询或者上墙预案的所有预置位 -->
+	<select id="selectPresentPositionsInPlan" parameterType="map" resultMap="BaseResultMap">
+		select
+			distinct <include refid="Customer_Column_List"/>
+		from 
+			t_present_position t, t_plan_present bpp, t_camera c, t_device d
+		where
+			t.id = bpp.present_id
+			and bpp.plan_id = #{planId}
+			and t.camera_id = c.id
+			and c.device_id = d.id
+	</select>
+	<!-- 查询巡航预案中的预置位立标并标记球机巡航预案中的预置位列表 -->
+	<select id="selectBallPresentsInCamera" parameterType="map" resultMap="BaseResultMap">
+		select 
+			*
+		from 
+			(select
+				<include refid="Customer_Column_List"/>,
+				(SELECT bpp.time_interval FROM t_ball_plan bp, t_plan_present bpp WHERE bp.id = bpp.plan_id AND bp.id=#{ballplanId} and t.id = bpp.present_id) time_interval,
+				(SELECT bpp.sort FROM t_ball_plan bp, t_plan_present bpp WHERE bp.id = bpp.plan_id AND bp.id=#{ballplanId} and t.id = bpp.present_id) presentSort,
+				(SELECT IF(COUNT(1)>0,1,0) FROM t_ball_plan bp, t_plan_present bpp WHERE bp.id = bpp.plan_id AND bp.id=#{ballplanId} and t.id = bpp.present_id) status
+			from 
+				t_present_position t, t_camera c, t_device d
+			where 
+				c.device_id = d.id 
+				and t.camera_id = c.id 
+				and c.id = #{cameraId}
+			) r
+			order by r.presentSort asc,r.sort asc
+	</select>
+	<!-- 查询报警设备表单中下拉选择的预置位列表 -->
+	<select id="selectAlarmPresentsInCamera" parameterType="map" resultMap="BaseResultMap">
+		select
+			<include refid="Customer_Column_List"/>,
+			(SELECT IF(COUNT(1)>0,1,0) FROM t_alarm_server tas WHERE t.camera_id = tas.camera_id and t.id = tas.present_id and tas.camera_id = #{cameraId} and tas.present_id = #{presentId}) status
+		from 
+			t_present_position t
+			order by t.sort asc
+	</select>
+	
+	<select id="selectPresentPositionsInCameras" parameterType = "map" resultMap="BaseResultMap">
+		SELECT 
+			<include refid="Customer_Column_List"></include>
+		FROM 
+			t_present_position t, t_camera c 
+		<where>
+			t.camera_id = c.id
+			<if test="isKeepwatch != null">
+				and t.is_keepwatch = #{isKeepwatch}
+			</if>
+			<if test="cameraIds != null">
+				<foreach collection="cameraIds" item="cameraId" index="index"
+			            open=" and c.id in(" close=")" separator=",">
+			            #{cameraId}
+	        	</foreach>
+			</if>
+		</where>
+		<!-- select * from t_present_position t
+		where is_keepwatch = #{isKeepwatch}
+			<if test = "cameraIds != null">
+				<foreach collection="cameraIds" item="cameraId" index="index"
+		            open=" and t.camera_id in(" close=")" separator=",">
+		            #{cameraId}
+        </foreach> 
+        </if>-->
+	</select>
+	<select id="selectPresentPositionsByCamera" parameterType="map" resultMap="BaseResultMap">
+		select <include refid="Customer_Column_List"></include> from t_present_position t
+	      <where>
+	          <if test="cameraId != null and cameraId !=''">
+	             and t.camera_id=#{cameraId}
+	          </if>
+	          <if test="name != null and name !=''">
+	             and t.name like concat('%',#{name},'%')
+	          </if>
+	      </where>
+	</select>
+	
+	<!-- 查询最大预置位号 -->
+	<select id="selectMaxPresetNum" parameterType = "java.lang.String" resultType="java.lang.String">
+		SELECT MAX(pp.present_no) FROM t_present_position  pp, t_camera c , t_device d where pp.camera_id=c.id and c.device_id =d.id
+		and d.SBBM=#{deviceCode}
+	</select>
+	
+	<!-- 查询最大预置位号 -->
+	<select id="selectMaxPresetNo" parameterType = "java.lang.String" resultType="java.lang.String">
+		SELECT MAX(pp.present_no) FROM t_present_position  pp, t_camera c , t_device d where pp.camera_id=c.id and c.device_id =d.id
+		and c.id=#{cameraId}
+	</select>
+	
+	<!-- 根据设备编码查询预置列表 -->
+	<select id="selectPresetList" parameterType="map" resultMap="BaseResultMap">
+	   SELECT pp.`name`,pp.camera_code,pp.present_no,pp.is_keepwatch  FROM t_camera c , t_device d ,t_present_position pp where pp.camera_id =c.id and c.device_id =d.id 
+       <if test="deviceCode != null and deviceCode !=''">
+	      and d.SBBM=#{deviceCode}
+	  </if>
+	  <if test="name != null and name !=''">
+	      and pp.name like concat('%',#{name},'%')
+	  </if>
+	   <if test="isKeepwatch != null and isKeepwatch !=''">
+	      and pp.is_keepwatch =1
+	  </if>
+	  
+	  ORDER BY CAST(present_no AS SIGNED)
+	</select>
+	
+	<!-- 查询最大排序序号 -->
+	<select id="selectMaxSort" parameterType = "java.lang.String" resultType="java.lang.Integer">
+		SELECT MAX(pp.sort) FROM t_present_position  pp, t_camera c , t_device d where pp.camera_id=c.id and c.device_id =d.id
+		and c.id=#{cameraId}
+	</select>
+	
+	<!-- 查询摄像机已设置的预置位编号 -->
+	<select id = "selectPresentNosByCamera" parameterType="java.lang.String" resultType="java.lang.String">
+		select t.present_no as presentNo from t_present_position t
+	      <where>
+	          <if test="cameraId != null and cameraId !=''">
+	             and t.camera_id=#{cameraId}
+	          </if>
+	      </where>
+	</select>
+</mapper>

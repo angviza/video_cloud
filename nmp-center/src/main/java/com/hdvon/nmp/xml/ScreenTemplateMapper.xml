@@ -1,0 +1,36 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<!DOCTYPE mapper PUBLIC "-//mybatis.org//DTD Mapper 3.0//EN" "http://mybatis.org/dtd/mybatis-3-mapper.dtd">
+<mapper namespace="com.hdvon.nmp.mapper.ScreenTemplateMapper">
+  <resultMap id="BaseResultMap" type="com.hdvon.nmp.vo.ScreenTemplateVo">
+    <id column="id" jdbcType="VARCHAR" property="id" />
+    <result column="name" jdbcType="VARCHAR"  property="name" />
+    <result column="rows" jdbcType="INTEGER"  property="rows" />
+    <result column="cols" jdbcType="INTEGER"  property="cols" />
+    <result column="description" jdbcType="VARCHAR"  property="description" />
+    <!--<result column="create_time" jdbcType="TIMESTAMP"  property="createTime" />-->
+    <!--<result column="update_time" jdbcType="TIMESTAMP"  property="updateTime" />-->
+    <!--<result column="create_user" jdbcType="VARCHAR"  property="createUser" />-->
+    <!--<result column="update_user" jdbcType="VARCHAR"  property="updateUser" />-->
+  </resultMap>
+
+  <sql id="Customer_Column_List">
+    t.id,t.name,t.rows,t.cols,t.description
+  </sql>
+  
+   <select id="selectByParam" parameterType="map" resultMap="BaseResultMap">
+      select <include refid="Customer_Column_List"></include> from t_screen_template t
+      <where>
+          <if test="templateName != null and templateName !=''">
+             and t.name like concat('%',#{templateName},'%')
+          </if>
+      </where>
+   </select>
+
+  <select id="selectScreenTemplateByPollingId" parameterType="java.lang.String" resultMap="BaseResultMap">
+  	select
+  		distinct <include refid="Customer_Column_List"/>
+  	from t_screen_template t,t_pollingplan_camera pc
+  	where pc.pollingplan_id = #{pollingId}
+  		and pc.screentemplate_id = t.id
+  </select>
+</mapper>

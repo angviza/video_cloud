@@ -1,0 +1,235 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<!DOCTYPE mapper PUBLIC "-//mybatis.org//DTD Mapper 3.0//EN" "http://mybatis.org/dtd/mybatis-3-mapper.dtd">
+<mapper namespace="com.hdvon.client.mapper.CameraPermissionMapper">
+
+	
+	<select id="findCameraPermissionByMap" parameterType="com.hdvon.client.vo.CameraMapVo" resultType="com.hdvon.client.vo.EsCameraPermissionVo">
+	SELECT
+		a.*, encodeserver.`name` AS encoderServerName,
+		address.`name` AS addressName,
+		address.`code` AS addressCode,
+		org.`name` AS orgName,
+		org.org_code AS orgCode,
+		project.`name` AS projectName
+	FROM
+		(
+			SELECT DISTINCT
+				(CONCAT(device.id, u.id)) AS id,
+				camera.id AS cameraId,
+				device.id AS deviceId,
+				device.SBMC AS deviceName,
+				device.SBBM AS deviceCode,
+				device.SXJLX AS deviceType,
+				rap.permission_value AS permissionValue,
+				CONCAT(device.WD, ',', device.JD) AS location,
+				device.JD AS longitude,
+				device.WD AS latitude,				
+				device.AZDZ AS installAddress,
+				device.SBCS AS deviceCompany,
+				device.IPv4 AS ip,
+				device.WZLX AS positionType,
+				device.JSDW AS constructionUnit,
+				device.CJDLB AS collectionCategory,
+				device.SXJGNLX AS functionalType,
+				ur.user_id AS userId,
+				u.account AS account,
+				cm.project_id AS projectId,
+				cm.address_id AS addressId,
+				cm.org_id AS orgId,
+				cm.encoder_server_id AS encoderServerId,
+				1 AS permanent,
+				'2018-01-01 00:00:00' AS startDate,
+				'2050-01-01 00:00:00' AS endDate
+			FROM
+				t_user_resourcerole AS ur,
+				t_resourcerole AS r,
+				t_resourcerole_camera_permission AS rap,
+				t_device device,
+				t_camera camera,
+				t_camera_mapping cm,
+				t_user u
+			WHERE u.id = ur.user_id
+			AND ur.resourcerole_id = r.id
+			AND r.id = rap.resoucerole_id
+			AND rap.camera_id = camera.id
+			AND device.id = camera.device_id
+			AND camera.id = cm.camera_id	
+			<if test="resRoleId != null and resRoleId!='' ">
+				AND r.id=#{resRoleId}
+			</if>
+			<if test="userList != null and userList.size() > 0 ">
+				and	ur.user_id in
+				<foreach collection="userList" item="item" open="(" close=")"  separator=",">
+		        	#{item}
+		        </foreach>	
+			</if>
+			<if test="deviceList != null and deviceList.size() > 0 ">
+				and	device.id in
+				<foreach collection="deviceList" item="item" open="(" close=")"  separator=",">
+		        	#{item}
+		        </foreach>	
+			</if>	
+		) a
+	LEFT JOIN t_encoder_server AS encodeserver ON encodeserver.id = a.encoderServerId
+	LEFT JOIN t_project AS project ON project.id = a.projectId
+	LEFT JOIN t_address AS address ON address.id = a.addressId
+	LEFT JOIN t_organization AS org ON org.id = a.orgId
+
+	
+	</select>
+	
+	
+
+    <!-- 普通用户新增权限预案 -->
+    <select id="findCameraPermissionByPlan" parameterType="com.hdvon.client.vo.CameraMapVo" resultType="com.hdvon.client.vo.EsCameraPermissionVo">
+		SELECT
+			a.*, encodeserver.`NAME` AS encoderServerName,
+			address.`name` AS addressName,
+			address.`code` AS addressCode,
+			org.`name` AS orgName,
+			org.org_code AS orgCode,
+			project.`name` AS projectName
+		FROM
+			(
+				SELECT DISTINCT
+					(CONCAT(device.id, pp.user_id)) AS id,
+					camera.id AS cameraId,
+					device.id AS deviceId,
+					device.SBMC AS deviceName,
+					device.SBBM AS deviceCode,
+					device.SXJLX AS deviceType,
+					rap.permission_value AS permissionValue,
+					CONCAT(device.WD, ',', device.JD) AS location,
+					device.JD AS longitude,
+					device.WD AS latitude,
+					device.AZDZ AS installAddress,
+					device.SBCS AS deviceCompany,
+					device.IPv4 AS ip,
+					device.WZLX AS positionType,
+					device.JSDW AS constructionUnit,
+					device.CJDLB AS collectionCategory,
+					device.SXJGNLX AS functionalType,
+					cm.project_id AS projectId,
+					cm.address_id AS addressId,
+					cm.org_id AS orgId,
+					cm.encoder_server_id AS encoderServerId,
+					pp.user_id AS userId,
+					pp.account AS account,
+					2 AS permanent,
+					pp.bgn_time1 AS startDate,
+					pp.end_time1 AS endDate
+				FROM
+					t_permissionplan_resourcerole pr,
+					t_resourcerole AS r,
+					t_resourcerole_camera_permission AS rap,
+					t_device device,
+					t_camera AS camera,
+					t_camera_mapping cm,
+					(
+						SELECT
+							`user`.id AS user_id,
+							`user`.account,
+							plan.id AS plan_id,
+							plan.bgn_time as bgn_time1,
+							plan.end_time as end_time1
+						FROM
+							t_user USER,
+							t_permissionplan_user puser,
+							t_permission_plan plan
+						WHERE
+							puser.user_id = `user`.id
+						AND puser.perssionplan_id = plan.id
+						AND plan.user_status = 9
+						AND plan. STATUS = 1
+						AND <![CDATA[now() <= plan.end_time ]]>
+						<if test="planId !=null and planId !='' ">
+							AND plan.id =#{planId}
+						</if>
+					    <if test="userList != null and userList.size() > 0 ">
+						    and	user.id in
+						   <foreach collection="userList" item="item" open="(" close=")"  separator=",">
+				        	   #{item}
+				           </foreach>	
+						 </if>
+					) pp
+				WHERE
+				pp.plan_id = pr.permissionplan_id
+				AND pr.resourcerole_id = r.id
+				AND r.id = rap.resoucerole_id
+				AND camera.device_id = device.id
+				AND rap.camera_id = camera.id
+				AND camera.id = cm.camera_id
+				<if test="devices != null and devices.size() > 0 ">
+				    and	device.id in
+				   <foreach collection="devices" item="item" open="(" close=")"  separator=",">
+		        	   #{item}
+		           </foreach>	
+				</if>
+				<if test="noEqRoleId !=null and noEqRoleId !='' ">
+					AND r.id !=#{noEqRoleId}
+				</if>
+			) a
+		LEFT JOIN t_encoder_server AS encodeserver ON encodeserver.id = a.encoderServerId
+		LEFT JOIN t_project AS project ON project.id = a.projectId
+		LEFT JOIN t_address AS address ON address.id = a.addressId
+		LEFT JOIN t_organization AS org ON org.id = a.orgId
+	</select>
+    
+    
+    <select id="selectRoleCameraPermission" parameterType="java.lang.String" resultType="com.hdvon.client.vo.CameraPermissionVo">
+    		SELECT distinct(distinct(addr.id)) as id,addr.`name` as name,addr.pid as pid,null as deviceId,null as permissionValue,null as deviceCode,null as deviceType 
+			FROM t_user_resourcerole AS ur,t_resourcerole AS r ,t_resourcerole_camera_permission As rap,t_address  AS addr
+		where  ur.resourcerole_id=r.id and r.id=rap.resoucerole_id
+		and addr.id=rap.camera_id
+		union
+		SELECT CONCAT('d_',device.id) as id,device.SBMC as name,cm.address_id as pid,device.id as device_id, rap.permission_value,
+		device.SBBM as deviceCode,device.SXJLX as deviceType 
+			FROM t_user_resourcerole AS ur,t_resourcerole AS r ,t_resourcerole_camera_permission AS rap,t_device device ,
+			t_camera  camera,t_camera_mapping cm
+		where ur.resourcerole_id=r.id 
+		<if test="isAdmin !=1 ">
+			and r.id=#{roleId} 
+		</if>
+		and  r.id=rap.resoucerole_id and
+		 rap.camera_id=camera.id and device.id=camera.device_id and camera.id=cm.camera_id
+		ORDER BY deviceCode
+		
+		
+    </select>
+    
+    
+       <select id="getHotsCamera" parameterType="java.lang.Integer" resultType="com.hdvon.client.vo.CameraPermissionVo">
+    		SELECT CONCAT('d_',device.id) as id,device.SBMC as name,cm.address_id as pid,device.id as device_id,
+		device.SBBM as deviceCode,device.SXJLX as deviceType 
+			FROM t_camera as camera LEFT JOIN t_device as device ON device.id=camera.device_id		
+		LEFT JOIN t_camera_mapping cm on camera.id=cm.camera_id
+		ORDER BY camera.hots desc limit #{pageSize}
+    </select>
+    
+    <select id="getCollectCameraList" parameterType="java.lang.String" resultType="com.hdvon.client.vo.CameraPermissionVo">
+	select collect.id,collect.name,0 as pid,null as device_id,
+			null as deviceCode,null as deviceType  from t_collect as collect
+	where collect.create_user=#{userName}
+	union 
+	select CONCAT('d_',device.id) as id,device.SBMC as name,cm.address_id as pid,device.id as device_id,
+			device.SBBM as deviceCode,device.SXJLX as deviceType from t_collect as collect,t_collect_mapping clt_m,t_device device
+	,t_camera_mapping cm,t_camera camera
+	where clt_m.collect_id=collect.id and clt_m.device_id=device.id and camera.device_id=device.id and camera.id=cm.camera_id and collect.create_user=#{userName}
+    </select>
+    
+    
+    <select id="findPlanUserListByPlan" parameterType="java.lang.String" resultType="java.lang.String">
+    	select user_id from t_permissionplan_info_el where plan_id in (#{planId}) and `status`=1 and plan_type=9
+    </select>
+    
+    <select id="findAllPermisllionUserList" resultType="com.hdvon.client.vo.CameraMappingMsg">
+		SELECT r.id as relationId,ur.user_id AS updateIds, 1 as type
+		FROM
+			t_user_resourcerole AS ur,
+			t_resourcerole AS r,
+			t_resourcerole_camera_permission AS rap
+		WHERE ur.resourcerole_id = r.id
+		AND r.id = rap.resoucerole_id
+		group by r.id,ur.user_id
+    </select>
+</mapper>

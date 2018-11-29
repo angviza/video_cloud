@@ -1,0 +1,100 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<!DOCTYPE mapper PUBLIC "-//mybatis.org//DTD Mapper 3.0//EN" "http://mybatis.org/dtd/mybatis-3-mapper.dtd">
+<mapper namespace="com.hdvon.nmp.mapper.MatrixMapper">
+  <resultMap id="BaseResultMap" type="com.hdvon.nmp.vo.MatrixVo">
+    <id column="id" jdbcType="VARCHAR" property="id" />
+    <result column="name" jdbcType="VARCHAR"  property="name" />
+    <result column="ip" jdbcType="VARCHAR"  property="ip" />
+    <result column="port" jdbcType="INTEGER"  property="port" />
+    <result column="devices_no" jdbcType="VARCHAR"  property="devicesNo" />
+    <result column="register_user" jdbcType="VARCHAR"  property="registerUser" />
+    <result column="register_password" jdbcType="VARCHAR"  property="registerPassword" />
+    <result column="register_server_ip" jdbcType="VARCHAR"  property="registerServerIp" />
+    <result column="register_server_port" jdbcType="INTEGER"  property="registerServerPort" />
+      <result column="register_server_id" jdbcType="VARCHAR"  property="registerServerId" />
+        <result column="register_server_domain" jdbcType="VARCHAR"  property="registerServerDomain" />
+    <result column="description" jdbcType="VARCHAR"  property="description" />
+    <result column="department_id" jdbcType="VARCHAR"  property="departmentId" />
+    <result column="department_name" jdbcType="VARCHAR"  property="departmentName" />
+    <result column="status" jdbcType="VARCHAR"  property="status" />
+    <!--<result column="create_time" jdbcType="TIMESTAMP"  property="createTime" />-->
+    <!--<result column="update_time" jdbcType="TIMESTAMP"  property="updateTime" />-->
+    <!--<result column="create_user" jdbcType="VARCHAR"  property="createUser" />-->
+    <!--<result column="update_user" jdbcType="VARCHAR"  property="updateUser" />-->
+  </resultMap>
+
+  <sql id="Customer_Column_List">
+    t.id,t.name,t.ip,t.port,t.devices_no,t.register_user,t.register_password,t.register_server_ip,t.register_server_port,t.register_server_id,t.register_server_domain,t.description,d.id as departmentId, d.name as departmentName
+  </sql>
+  <sql id="Customer_Vo_List">
+    t.id,t.name,t.ip,t.port,t.devices_no as devicesNo,t.register_user as registerUser,t.register_password as registerPassword,t.register_server_ip as registerServerIp,t.register_server_port as registerServerPort,t.register_server_id as registerServerId,t.register_server_domain as registerServerDomain,t.description,t.update_time as updateTime,t.create_time as createTime,d.id as departmentId,d.name as departmentName
+  </sql>
+  <sql id="Common_Part_Relate">
+  	select
+  		<include refid="Customer_Vo_List"/>
+  	from
+  		t_matrix t,t_department d,t_department_matrix dm
+  	where t.id = dm.matrix_id
+  		and d.id = dm.department_id
+  </sql>
+  <select id="selectMatrixPage" parameterType="map" resultType="com.hdvon.nmp.vo.MatrixVo">
+  		select dmt.*,(select if(count(1)>0,1,0) from t_matrix_channel tmc where tmc.matrix_id = dmt.id
+	  			<if test = "channelName != null and channelName != ''">
+			  		and tmc.name like concat('%',#{channelName},'%')
+			  	</if>
+	  		) as status
+  		from (
+  		<include refid="Common_Part_Relate"/>
+  		<if test="deptIds != null and deptIds.size() > 0">
+             and d.id in
+              <foreach collection="deptIds" item="item" open="(" close=")"  separator=",">
+	              #{item}
+	          </foreach>
+       	</if>
+  		<if test = "name != null and name != ''">
+	  		and t.name like concat('%',#{name},'%')
+	  	</if>
+	  	<if test = "deviceNo != null and deviceNo != ''">
+	  		and t.devices_no = #{deviceNo}
+	  	</if>
+	  	<if test = "registerUser != null and registerUser != ''">
+	  		and t.register_user = #{registerUser}
+	  	</if>) dmt
+	  	order by dmt.updateTime desc
+  </select>
+	<!-- 查询矩阵列表 -->
+  <select id="selectMatrixList" parameterType="map" resultType="com.hdvon.nmp.vo.MatrixVo">
+  		select dmt.*,(select if(count(1)>0,1,0) from t_matrix_channel tmc where tmc.matrix_id = dmt.id
+	  			<if test = "channelName != null and channelName != ''">
+			  		and tmc.name like concat('%',#{channelName},'%')
+			  	</if>
+	  		) as status
+  		from (
+  		<include refid="Common_Part_Relate"/>
+  		<if test = "deptId != null and deptId != ''">
+  			and d.id = #{deptId}
+  		</if>
+  		<if test = "name != null and name != ''">
+	  		and t.name like concat('%',#{name},'%')
+	  	</if>
+	  	<if test = "deviceNo != null and deviceNo != ''">
+	  		and t.devices_no = #{deviceNo}
+	  	</if>
+	  	<if test = "registerUser != null and registerUser != ''">
+	  		and t.register_user = #{registerUser}
+	  	</if>) dmt
+	  	order by dmt.updateTime desc
+  </select>
+  <!-- 查询矩阵详细信息 -->
+  <select id="selectMatrixDetailById" parameterType="java.lang.String" resultType="com.hdvon.nmp.vo.MatrixVo">
+  	<include refid="Common_Part_Relate"/>
+  	and t.id= #{id}
+  </select>
+  
+  <!-- 根据前面指定编码查询最大编码 -->
+    <select id="selectMaxCodeBycode" parameterType="map" resultType="java.lang.String">
+       SELECT MAX(devices_no) from t_matrix where devices_no like concat('%',#{code},'%')
+    </select>
+  
+
+</mapper>

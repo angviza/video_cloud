@@ -1,0 +1,78 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<!DOCTYPE mapper PUBLIC "-//mybatis.org//DTD Mapper 3.0//EN" "http://mybatis.org/dtd/mybatis-3-mapper.dtd">
+<mapper namespace="com.hdvon.nmp.mapper.EncoderServerMapper">
+  <resultMap id="BaseResultMap" type="com.hdvon.nmp.vo.EncoderServerVo">
+    <id column="id" jdbcType="VARCHAR" property="id" />
+    <result column="name" jdbcType="VARCHAR"  property="name" />
+    <result column="ip" jdbcType="VARCHAR"  property="ip" />
+    <result column="port" jdbcType="INTEGER"  property="port" />
+    <result column="username" jdbcType="VARCHAR"  property="username" />
+    <result column="password" jdbcType="VARCHAR"  property="password" />
+    <result column="devices_no" jdbcType="VARCHAR"  property="devicesNo" />
+    <result column="device_cj" jdbcType="INTEGER"  property="deviceCj" />
+    <result column="device_type" jdbcType="INTEGER"  property="deviceType" />
+    <result column="register_user" jdbcType="VARCHAR"  property="registerUser" />
+    <result column="register_password" jdbcType="VARCHAR"  property="registerPassword" />
+    <result column="register_ip" jdbcType="VARCHAR"  property="registerIp" />
+    <result column="register_port" jdbcType="INTEGER"  property="registerPort" />
+    <result column="channels" jdbcType="INTEGER"  property="channels" />
+    <result column="init_channel" jdbcType="INTEGER"  property="initChannel" />
+    <result column="description" jdbcType="VARCHAR"  property="description" />
+    <result column="address_id" jdbcType="VARCHAR"  property="addressId" />
+    <result column="address_name" jdbcType="VARCHAR"  property="addressName" />
+    <result column="project_id" jdbcType="VARCHAR"  property="projectId" />
+    <result column="project_name" jdbcType="VARCHAR"  property="projectName" />
+  </resultMap>
+
+  <sql id="Customer_Column_List">
+    t.id,t.NAME,t.ip,t.PORT,t.username,t.PASSWORD,t.devices_no,t.device_cj,t.device_type,t.register_user,t.register_password,t.register_ip,t.register_port,t.channels,t.init_channel,t.description
+  </sql>
+  <sql id="Customer_Vo_List">
+    t.id,t.NAME,t.ip,t.PORT,t.username,t.PASSWORD,t.devices_no as devicesNo,t.device_cj as deviceCj,t.device_type as deviceType,t.register_user as registerUser,t.register_password as registerPassword,t.register_ip as registerIp,t.register_port as registerPort,t.channels,t.init_channel as initChannel,t.description
+  </sql>
+    <!-- 查询编码器信息 -->
+	<select id="selectEncoderServerList" parameterType="map" resultType="com.hdvon.nmp.vo.EncoderServerVo">
+        SELECT
+          <include refid="Customer_Vo_List" />,
+          em.address_id as addressId,
+          (SELECT aa.name FROM t_address aa WHERE aa.id= em.address_id) addressName,
+          em.project_id as projectId,
+          (SELECT pp.name FROM t_project pp WHERE pp.id= em.project_id) projectName
+        FROM
+          t_encoder_server t
+          LEFT JOIN t_encodeserver_mapping em
+          ON t.id = em.encodeserver_id
+        <where>
+            <if test="addrIds != null and addrIds.size() > 0">
+                and em.address_id in
+                 <foreach collection="addrIds" item="item" open="(" close=")"  separator=",">
+	                #{item}
+	            </foreach>
+            </if>
+            <if test="projectIds != null and projectIds.size() > 0">
+                and em.project_id in
+                <foreach collection="projectIds" item="item" open="(" close=")"  separator=",">
+	                #{item}
+	            </foreach>
+            </if>
+            <if test="search != null and search != ''">
+                and t.name like concat('%',#{search},'%')
+            </if>
+            <if test="id != null">
+                and t.id=#{id}
+            </if>
+            <if test="nameList != null and nameList.size() > 0">
+                and t.name in
+                 <foreach collection="nameList" item="item" open="(" close=")"  separator=",">
+	                #{item}
+	            </foreach>
+            </if>
+        </where>
+		order by t.`create_time` desc
+	</select>
+	
+      <!-- 根据前面指定编码查询最大编码 -->
+    <select id="selectMaxCodeByParam" parameterType="map" resultType="java.lang.String">
+       SELECT MAX(devices_no) from t_encoder_server where devices_no like concat('%',#{code},'%')
+    </select>
+</mapper>

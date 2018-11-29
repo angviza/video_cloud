@@ -1,0 +1,23 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<!DOCTYPE mapper PUBLIC "-//mybatis.org//DTD Mapper 3.0//EN" "http://mybatis.org/dtd/mybatis-3-mapper.dtd">
+<mapper namespace="com.hdvon.quartz.mapper.MessageScheduleMapper">
+    <resultMap id="BaseResultMap" type="com.hdvon.quartz.entity.MessageSchedule">
+        <id column="id" jdbcType="VARCHAR" property="id" />
+        <result column="user_id" jdbcType="LONGVARCHAR"  property="userId" />
+        <result column="device_ids" jdbcType="LONGVARCHAR"  property="deviceIds" />
+        <result column="update_ids" jdbcType="LONGVARCHAR"  property="updateIds" />
+        <result column="delete_ids" jdbcType="LONGVARCHAR"  property="deleteIds" />
+        <result column="relation_ids" jdbcType="LONGVARCHAR"  property="relationIds" />
+        <result column="type" jdbcType="INTEGER"  property="type" />
+        <result column="operate_type" jdbcType="VARCHAR"  property="operateType" />
+        <result column="content" jdbcType="LONGVARCHAR"  property="content" />
+        <result column="status" jdbcType="INTEGER"  property="status" />
+        <result column="recieve_time" jdbcType="TIMESTAMP"  property="recieveTime" />
+        <result column="send_time" jdbcType="TIMESTAMP"  property="sendTime" />
+    </resultMap>
+
+    <sql id="Customer_Column_List">
+        t.id,t.user_id,t.device_ids,t.update_ids,t.delete_ids,t.relation_ids,t.type,t.operate_type,t.content,t.status,t.recieve_time,t.send_time
+    </sql>
+
+</mapper>

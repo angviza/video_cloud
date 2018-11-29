@@ -1,0 +1,45 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<!DOCTYPE mapper PUBLIC "-//mybatis.org//DTD Mapper 3.0//EN" "http://mybatis.org/dtd/mybatis-3-mapper.dtd">
+<mapper namespace="com.hdvon.nmp.mapper.SysconfigParamMapper">
+    <resultMap id="BaseResultMap" type="com.hdvon.nmp.vo.SysconfigParamVo">
+        <id column="id" jdbcType="VARCHAR" property="id" />
+        <result column="name" jdbcType="VARCHAR"  property="name" />
+        <result column="en_name" jdbcType="VARCHAR"  property="enName" />
+        <result column="value" jdbcType="VARCHAR"  property="value" />
+        <result column="state" jdbcType="VARCHAR"  property="state" />
+        <result column="description" jdbcType="VARCHAR"  property="description" />
+        <result column="chname" jdbcType="VARCHAR"  property="chname" />
+         <result column="dictionaryId" jdbcType="VARCHAR"  property="dictionaryId" />
+        <!--<result column="create_time" jdbcType="TIMESTAMP"  property="createTime" />-->
+        <!--<result column="update_time" jdbcType="TIMESTAMP"  property="updateTime" />-->
+        <!--<result column="create_user" jdbcType="VARCHAR"  property="createUser" />-->
+        <!--<result column="update_user" jdbcType="VARCHAR"  property="updateUser" />-->
+    </resultMap>
+
+    <sql id="Customer_Column_List">
+        t.id,t.name,t.en_name,t.value,t.state,t.description
+    </sql>
+    
+     <select id="selectByParam" parameterType="map" resultMap="BaseResultMap">
+        SELECT <include refid="Customer_Column_List"/> FROM t_sysconfig_param t
+        <where>
+          <if test="id != null and id !=''">
+              and t.id = #{id}
+          </if>
+          <if test="name != null and name !=''">
+              and t.name like concat('%',#{name},'%')
+          </if>
+          <if test="enName != null and enName !=''">
+              and t.en_name =#{enName}
+          </if>
+          <if test="state != null and state !=''">
+              and t.state =#{state}
+          </if>
+          <if test="value != null and value !=''">
+              and t.value = #{value}
+          </if>
+        </where>
+        ORDER BY t.create_time desc 
+    </select>
+
+</mapper>

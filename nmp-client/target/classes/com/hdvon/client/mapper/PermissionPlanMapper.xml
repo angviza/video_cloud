@@ -1,0 +1,192 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<!DOCTYPE mapper PUBLIC "-//mybatis.org//DTD Mapper 3.0//EN" "http://mybatis.org/dtd/mybatis-3-mapper.dtd">
+<mapper namespace="com.hdvon.client.mapper.PermissionPlanMapper">
+
+	<select id="findRecord" parameterType="java.lang.String"  resultType="com.hdvon.client.entity.PermissionPlan">
+		select * from t_permission_plan where id=#{planId} and user_status=9
+	</select>
+
+	<select id="getPermissionPlanUserList" resultType="java.lang.String">
+		select DISTINCT(pu.user_id) as userId from t_permission_plan pp,t_permissionplan_user pu 
+		where pp.user_status=9 and pp.status=1 
+			AND <![CDATA[ now()>= pp.bgn_time AND now()<= pp.end_time ]]> and pu.perssionplan_id=pp.id
+	</select>
+	
+
+	<select id="getPermissionPlanCameraList" resultType="java.lang.String">
+		SELECT DISTINCT
+			(device.id) AS deviceId
+		FROM
+			t_permission_plan pp,
+			t_permissionplan_resourcerole pr,
+			t_resourcerole AS r,
+			t_resourcerole_camera_permission AS rap,
+			t_device device,
+			t_camera AS camera
+		WHERE
+			pp.user_status = 9
+		AND pp. STATUS = 1
+		AND <![CDATA[ now()>= pp.bgn_time AND now()<= pp.end_time ]]>
+		AND pr.permissionplan_id = pp.id
+		AND r.id = rap.resoucerole_id
+		AND camera.device_id = device.id
+		AND rap.camera_id = camera.id
+	</select>
+	
+	<!-- 白名单关联的摄像机 -->
+	<select id="getPermissionPlanWhiteCameraList" resultType="com.hdvon.client.vo.EsCameraPermissionVo">
+	        SELECT device.id AS deviceId,pu.user_id as userId
+				FROM
+					t_permission_plan pp,
+					t_permissionplan_user pu,
+					t_permissionplan_resourcerole pr,
+					t_resourcerole AS r,
+					t_resourcerole_camera_permission AS rap,
+					t_device device,
+					t_camera AS camera
+				WHERE pp.user_status = 1
+				AND pp. STATUS = 1
+				AND <![CDATA[ now()>= pp.bgn_time AND now()<= pp.end_time ]]>
+				AND pu.perssionplan_id = pp.id
+				AND pr.permissionplan_id = pp.id
+				AND r.id = rap.resoucerole_id
+				AND pr.resourcerole_id=r.id 
+				AND camera.device_id = device.id
+				AND rap.camera_id = camera.id
+			    group by deviceId,userId
+	
+		<!-- select * from	(SELECT device.id AS deviceId,
+					ur.user_id as userId
+				FROM
+					t_permission_plan pp,
+					t_user_resourcerole ur,
+					t_permissionplan_resourcerole pr,
+					t_resourcerole AS r,
+					t_resourcerole_camera_permission AS rap,
+					t_device device,
+					t_camera AS camera
+				WHERE pp.user_status = 1
+				AND pp. STATUS = 1
+				AND <![CDATA[ now()>= pp.bgn_time AND now()<= pp.end_time ]]>
+				AND pr.permissionplan_id = pp.id
+				AND r.id = rap.resoucerole_id
+				AND pr.resourcerole_id=r.id 
+				and ur.resourcerole_id = r.id
+				AND camera.device_id = device.id
+				AND rap.camera_id = camera.id
+			union ALL
+			SELECT device.id AS deviceId,
+					pu.user_id as userId
+				FROM
+					t_permission_plan pp,
+					t_permissionplan_user pu,
+					t_permissionplan_resourcerole pr,
+					t_resourcerole AS r,
+					t_resourcerole_camera_permission AS rap,
+					t_device device,
+					t_camera AS camera
+				WHERE pp.user_status = 1
+				AND pp. STATUS = 1
+				AND <![CDATA[ now()>= pp.bgn_time AND now()<= pp.end_time ]]>
+				AND pu.perssionplan_id = pp.id
+				AND pr.permissionplan_id = pp.id
+				AND r.id = rap.resoucerole_id
+				AND pr.resourcerole_id=r.id 
+				AND camera.device_id = device.id
+				AND rap.camera_id = camera.id
+		    AND pu.user_id is null
+			)AS a
+			group by deviceId,userId -->
+	</select>
+	
+	<!-- 黑名单 -->
+	<select id="getPermissionPlanBlackCameraList" resultType="java.lang.Long" parameterType="java.lang.Long">
+		SELECT device.id AS deviceId
+				FROM
+					t_permission_plan pp,
+					t_permissionplan_user pu,
+					t_permissionplan_resourcerole pr,
+					t_resourcerole AS r,
+					t_resourcerole_camera_permission AS rap,
+					t_device device,
+					t_camera AS camera
+				WHERE pp.user_status = 2
+				AND pp. STATUS = 1
+				AND <![CDATA[ now()>= pp.bgn_time AND now()<= pp.end_time ]]>
+				AND pu.perssionplan_id = pp.id
+				AND pr.permissionplan_id = pp.id
+				AND r.id = rap.resoucerole_id
+				AND pr.resourcerole_id=r.id 
+				AND camera.device_id = device.id
+				AND rap.camera_id = camera.id
+				and pu.user_id = #{userId}
+			    group by deviceId
+			    
+		<!-- select * from (SELECT DISTINCT(device.id) AS deviceId
+			FROM
+				t_permission_plan pp,
+				t_permissionplan_user pu,
+				t_permissionplan_resourcerole pr,
+				t_resourcerole AS r,
+				t_resourcerole_camera_permission AS rap,
+				t_device device,
+				t_camera AS camera
+			WHERE
+				pu.user_id = #{userId}
+			AND pp.user_status = 2
+			AND pp. STATUS = 1
+			AND <![CDATA[ now()>= pp.bgn_time AND now()<= pp.end_time ]]>
+			AND pu.perssionplan_id = pp.id
+			AND pr.permissionplan_id = pp.id
+			AND r.id = rap.resoucerole_id
+			AND camera.device_id = device.id
+			AND rap.camera_id = camera.id
+		union ALL
+			SELECT DISTINCT
+					(device.id) AS deviceId
+				FROM
+					t_permission_plan pp,
+				  t_user_resourcerole ur,
+					t_permissionplan_resourcerole pr,
+					t_resourcerole AS r,
+					t_resourcerole_camera_permission AS rap,
+					t_device device,
+					t_camera AS camera
+				WHERE
+					ur.user_id = #{userId}
+				AND pp.user_status = 2
+				AND pp. STATUS = 1
+				AND <![CDATA[ now()>= pp.bgn_time AND now()<= pp.end_time ]]>
+				AND ur.resourcerole_id = r.id
+				AND pr.permissionplan_id = pp.id
+				AND r.id = rap.resoucerole_id
+				AND camera.device_id = device.id
+				AND rap.camera_id = camera.id
+		)AS a GROUP BY deviceId	 -->	
+	</select>
+	
+	
+	<select id="getAllPermissionPlanList" resultType="com.hdvon.client.vo.CameraMappingMsg">
+	 SELECT pp.id as relationId,ur.user_id as updateIds, 2 as type
+	 from t_permission_plan pp,t_permissionplan_resourcerole pr,
+	 (SELECT puser.user_id ,plan.id as plan_id FROM t_permission_plan plan ,t_permissionplan_user puser where plan.id= perssionplan_id) ur
+	 where pp.user_status = 9 AND pp. STATUS = 1 and pp.id=pr.permissionplan_id
+	   AND ur.plan_id =pp.id AND <![CDATA[ now()<= pp.end_time ]]>
+	 group by pp.id,ur.user_id
+	</select>
+	
+	<!-- 根据资源角色查找新增授权 -->
+	<select id="selectPlanIdByResId" parameterType="String" resultType="String">
+	    SELECT plan.id from t_permission_plan plan ,t_permissionplan_resourcerole pres where plan.id=pres.permissionplan_id
+	    and plan.user_status = 9 AND plan. STATUS = 1 AND <![CDATA[ now()<= plan.end_time ]]>
+	    and resourcerole_id=#{resId}
+	</select>
+	
+	<!-- 根据新增授权预案id找出关联的用户 -->
+	<select id="selectUserIdByPlan" parameterType="String" resultType="String">
+	  SELECT puser.user_id from t_permission_plan plan ,t_permissionplan_user puser where plan.id= puser.perssionplan_id
+      and plan.user_status = 9 AND plan. STATUS = 1  AND <![CDATA[ now()<= plan.end_time ]]>
+      and plan.id =#{planId}
+	</select>
+	
+</mapper>

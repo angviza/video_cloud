@@ -1,0 +1,131 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<!DOCTYPE mapper PUBLIC "-//mybatis.org//DTD Mapper 3.0//EN" "http://mybatis.org/dtd/mybatis-3-mapper.dtd">
+<mapper namespace="com.hdvon.nmp.mapper.SysmenuMapper">
+  <resultMap id="BaseResultMap" type="com.hdvon.nmp.vo.SysmenuVo">
+    <id column="id" jdbcType="VARCHAR" property="id" />
+    <result column="name" jdbcType="VARCHAR"  property="name" />
+    <result column="pid" jdbcType="VARCHAR"  property="pid" />
+    <result column="url" jdbcType="VARCHAR"  property="url" />
+    <result column="icon" jdbcType="VARCHAR"  property="icon" />
+    <result column="type" jdbcType="INTEGER"  property="type" />
+    <result column="method" jdbcType="VARCHAR"  property="method" />
+    <result column="code" jdbcType="VARCHAR"  property="code" />
+    <result column="description" jdbcType="VARCHAR"  property="description" />
+    <result column="enabled" jdbcType="INTEGER"  property="enabled" />
+    <result column="color" jdbcType="VARCHAR"  property="color" />
+    <result column="orderby" jdbcType="INTEGER"  property="orderby" />
+    <result column="is_check" jdbcType="INTEGER"  property="isCheck" />
+  </resultMap>
+
+  <sql id="Customer_Column_List">
+    t.id,t.name,t.pid,t.url,t.icon,t.type,t.method,t.code,t.description,t.enabled,t.color,t.orderby
+  </sql>
+  
+   <select id="selectByParam" parameterType="map" resultMap="BaseResultMap">
+      select <include refid="Customer_Column_List"></include> from t_sysmenu t
+      <where>
+          <if test="name != null and name !=''">
+             and t.name like concat('%',#{name},'%')
+          </if>
+           <if test="pid!= null and pid !=''">
+             and t.pid =#{pid}
+          </if>
+          <if test="type!= null and type !=''">
+             and t.type =#{type}
+          </if>
+          and t.enabled in (0,1)
+      </where>
+   </select>
+
+    <select id="selectMenuByRoleId" resultMap="BaseResultMap" parameterType="map">
+        SELECT
+        <include refid="Customer_Column_List" />,
+        (SELECT IF(COUNT(1)>0,1,0) FROM t_sysrole_sysmenu v WHERE v.sysmenu_id = t.`id` AND v.sysrole_id= #{roleId}) is_check
+        from t_sysmenu t
+        <where>
+         <!-- 过滤公共菜单权限 -->
+         <if test="rePid !=null and rePid !='' ">
+           and (t.id !=#{rePid} and t.pid !=#{rePid}) and t.id not in ('2020','2020G','2020P')
+         </if>
+          and t.enabled = 1
+        </where>
+    </select>
+
+    <select id="selectMenuByUserId" resultMap="BaseResultMap" parameterType="map">
+        SELECT
+        <include refid="Customer_Column_List" />
+        FROM t_sysmenu t
+        <where>
+            <!--非管理员不允许查看菜单管理、系统参数管理，允许查询所有公共资源(pid为2022)-->
+            <if test="!isAdmin">
+                and t.id IN(
+                    SELECT m.`sysmenu_id` FROM t_sysrole_sysmenu m , t_user_sysrole r
+                    WHERE m.`sysrole_id` = r.`role_id`
+                    AND r.`user_id` = #{userId}
+                    UNION ALL
+                    SELECT t2.id FROM t_sysmenu t2
+                    WHERE t2.pid = '2022'
+                )
+                AND t.id NOT in ('2020','2020G','2020P','2089','2089G','2089P')
+            </if>
+            AND t.enabled = 1
+        </where>
+        ORDER BY t.pid , t.orderby
+    </select>
+
+    <select id="selectCustomerMenuByUserId" resultMap="BaseResultMap" parameterType="map">
+        SELECT v.* FROM (
+            SELECT
+                t.`id`,
+                IFNULL(us.`sysmenu_name`,t.`name`) `name`,
+                IFNULL(us.`sysmenu_pid`,t.`pid`) `pid`,
+                t.`url`,
+                t.`icon`,
+                t.`type`,
+                t.`method`,
+                t.`code`,
+                t.`description`,
+                t.`enabled`,
+                t.`color`,
+                IFNULL(us.`orderby`,t.`orderby`) orderby
+            FROM t_sysmenu t
+            LEFT JOIN t_user_sysmenu  us
+            ON t.`id` = us.`sysmenu_id`
+            AND us.`user_id` = #{userId}
+            <where>
+                <!--非管理员不允许查看菜单管理、系统参数管理，允许查询所有公共资源(pid为2022)-->
+                <if test="!isAdmin">
+                    and t.id IN(
+                        SELECT m.`sysmenu_id` FROM t_sysrole_sysmenu m , t_user_sysrole r
+                        WHERE m.`sysrole_id` = r.`role_id`
+                        AND r.`user_id` = #{userId}
+                        UNION ALL
+                        SELECT t2.id FROM t_sysmenu t2
+                        WHERE t2.pid = '2022'
+                    )
+                    AND t.id NOT IN ('2020','2020G','2020P','2089','2089G','2089P')
+                    AND t.id NOT IN (
+                      SELECT us2.`sysmenu_id` FROM t_user_sysmenu us2 WHERE us2.`user_id` = #{userId} AND us2.`hide` = 0
+                    )
+                </if>
+                AND t.`enabled` = 1
+                AND t.`type` = 1
+            </where>
+        ) v
+        ORDER BY v.pid , v.orderby
+    </select>
+
+    <select id="selectMenuTreeByIds" resultMap="BaseResultMap" parameterType="java.lang.String">
+    	select
+    		<include refid="Customer_Column_List" />
+    	from t_sysmenu t
+    	where
+    		FIND_IN_SET(t.id,getParentMenu(#{idArr}))
+            and t.enabled in (0,1)
+    </select>
+
+    <!-- 用户行为日志操作模块关联菜单 -->
+    <select id="selectSysmenusList" resultType="com.hdvon.nmp.vo.SysmenuVo">
+        SELECT id,`name` FROM t_sysmenu where id in(SELECT DISTINCT pid FROM t_sysmenu where type='2') order by orderby
+    </select>
+</mapper>

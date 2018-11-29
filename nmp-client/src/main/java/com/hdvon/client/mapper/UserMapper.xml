@@ -1,0 +1,21 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<!DOCTYPE mapper PUBLIC "-//mybatis.org//DTD Mapper 3.0//EN" "http://mybatis.org/dtd/mybatis-3-mapper.dtd">
+<mapper namespace="com.hdvon.client.mapper.UserMapper">
+
+	<select id="findListByIds" parameterType="java.lang.String" resultType="com.hdvon.client.entity.User">
+		select * from t_user where id in(#{userIds})
+	</select>
+
+
+	<select id="findListByDepId" parameterType="java.lang.String" resultType="com.hdvon.client.vo.UserVo">
+		select u.* from t_user u,t_user_department ud where ud.dep_id=#{depId} and u.id=ud.user_id and u.`enable`=1 
+	</select>
+	
+	<!-- 根据角色id或者所有的用户 -->
+	<select id="getUserIdsByRoleId" parameterType="java.lang.String" resultType="java.lang.String">
+		SELECT u.id from t_user u, t_user_resourcerole ures, t_resourcerole res  
+		where u.id=ures.user_id and ures.resourcerole_id =res.id  and res.id=#{roleId}
+	</select>
+	
+	
+</mapper>

@@ -1,0 +1,4 @@
+com\hdvon\face\exception\FaceException.class
+com\hdvon\face\vo\HDFaceInfoVo.class
+com\hdvon\face\FaceConstant.class
+com\hdvon\face\service\FaceService.class

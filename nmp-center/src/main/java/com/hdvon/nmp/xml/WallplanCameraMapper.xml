@@ -1,0 +1,36 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<!DOCTYPE mapper PUBLIC "-//mybatis.org//DTD Mapper 3.0//EN" "http://mybatis.org/dtd/mybatis-3-mapper.dtd">
+<mapper namespace="com.hdvon.nmp.mapper.WallplanCameraMapper">
+  <resultMap id="BaseResultMap" type="com.hdvon.nmp.vo.WallplanCameraVo">
+    <id column="id" jdbcType="VARCHAR" property="id" />
+    <result column="wallplan_id" jdbcType="VARCHAR"  property="wallplanId" />
+    <result column="matrixchannel_id" jdbcType="VARCHAR"  property="matrixchannelId" />
+    <result column="camera_id" jdbcType="VARCHAR"  property="cameraId" />
+    <result column="device_id" jdbcType="VARCHAR"  property="deviceId" />
+    <result column="camera_code" jdbcType="VARCHAR"  property="deviceCode" />
+    <result column="camera_name" jdbcType="VARCHAR"  property="name" />
+  	<result column="cameragroup_id" jdbcType="VARCHAR"  property="cameragroupId" />
+    <result column="cameragroup_name" jdbcType="VARCHAR"  property="cameragroupName" />
+    <result column="sort" jdbcType="INTEGER"  property="sort" />
+</resultMap>
+
+    <sql id="Customer_Column_List">
+        t.id,t.wallplan_id,t.matrixchannel_id,t.camera_id,t.cameragroup_id,t.cameragroup_name,t.sort
+    </sql>
+
+    <select id="selectByParam" parameterType="map" resultMap="BaseResultMap">
+      select
+      <include refid="Customer_Column_List"></include>
+      from t_wallplan_camera t
+      <where>
+          <if test="wallplanId != null and wallplanId !=''">
+             and t.wallplan_id=#{wallplanId}
+          </if>
+          <if test="channelId != null and channelId !=''">
+             and t.matrixchannel_id=#{channelId}
+          </if>
+      </where>
+
+</select>
+
+</mapper>

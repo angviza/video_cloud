@@ -1,0 +1,53 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<!DOCTYPE mapper PUBLIC "-//mybatis.org//DTD Mapper 3.0//EN" "http://mybatis.org/dtd/mybatis-3-mapper.dtd">
+<mapper namespace="com.hdvon.nmp.mapper.LimitLoginMapper">
+    <resultMap id="BaseResultMap" type="com.hdvon.nmp.vo.LimitLoginVo">
+        <id column="id" jdbcType="VARCHAR" property="id" />
+        <result column="type" jdbcType="VARCHAR"  property="type" />
+        <result column="is_regasion" jdbcType="VARCHAR"  property="isRegasion" />
+        <result column="state" jdbcType="VARCHAR"  property="state" />
+        <result column="start_regaion" jdbcType="VARCHAR"  property="startRegaion" />
+        <result column="end_regaion" jdbcType="VARCHAR"  property="endRegaion" />
+        <result column="mac_name" jdbcType="VARCHAR"  property="macName" />
+        <result column="description" jdbcType="VARCHAR"  property="description" />
+        <!--<result column="create_time" jdbcType="TIMESTAMP"  property="createTime" />-->
+        <!--<result column="update_time" jdbcType="TIMESTAMP"  property="updateTime" />-->
+        <!--<result column="create_user" jdbcType="VARCHAR"  property="createUser" />-->
+        <!--<result column="update_user" jdbcType="VARCHAR"  property="updateUser" />-->
+    </resultMap>
+
+    <sql id="Customer_Column_List">
+        t.id,t.type,t.is_regasion,t.state,t.start_regaion,t.end_regaion,t.mac_name,t.description
+    </sql>
+    
+    <select id="selectByParam" parameterType="map" resultMap="BaseResultMap">
+        SELECT <include refid="Customer_Column_List"/> FROM t_limit_login t
+        <where>
+          <if test="id != null and id !=''">
+              and t.id = #{id}
+          </if>
+          <if test="type != null and type !=''">
+              and t.type = #{type}
+          </if>
+          <if test="state != null and state !=''">
+              and t.state = #{state}
+          </if>
+           <if test="isRegasion != null and isRegasion !=''">
+              and t.is_regasion = #{isRegasion}
+          </if>
+           <if test="macName != null and macName !=''">
+              and t.mac_name = #{macName}
+          </if>
+          <!-- 过滤mac地址 -->
+          <if test="removeMac != null and removeMac !=''">
+              and t.type != '2'
+          </if>
+          <if test="searchIp != null and searchIp !=''">
+             and (t.start_regaion like concat('%',#{searchIp},'%') 
+                or (t.end_regaion like concat('%',#{searchIp},'%')) )
+          </if>
+        </where>
+        order by t.create_time desc
+    </select>
+
+</mapper>

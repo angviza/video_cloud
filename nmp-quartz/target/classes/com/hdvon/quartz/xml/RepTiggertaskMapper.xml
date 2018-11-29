@@ -1,0 +1,18 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<!DOCTYPE mapper PUBLIC "-//mybatis.org//DTD Mapper 3.0//EN" "http://mybatis.org/dtd/mybatis-3-mapper.dtd">
+<mapper namespace="com.hdvon.quartz.mapper.RepTiggertaskMapper">
+    <resultMap id="BaseResultMap" type="com.hdvon.quartz.entity.RepTiggertask">
+        <id column="id" jdbcType="VARCHAR" property="id" />
+        <result column="name" jdbcType="VARCHAR"  property="name" />
+        <result column="rules" jdbcType="VARCHAR"  property="rules" />
+        <result column="type" jdbcType="VARCHAR"  property="type" />
+        <result column="description" jdbcType="VARCHAR"  property="description" />
+        <result column="creat_time" jdbcType="TIMESTAMP"  property="creatTime" />
+        <!--<result column="update_time" jdbcType="TIMESTAMP"  property="updateTime" />-->
+    </resultMap>
+
+    <sql id="Customer_Column_List">
+        t.id,t.name,t.rules,t.type,t.description,t.creat_time
+    </sql>
+
+</mapper>

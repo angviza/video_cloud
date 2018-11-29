@@ -1,0 +1,52 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<!DOCTYPE mapper PUBLIC "-//mybatis.org//DTD Mapper 3.0//EN" "http://mybatis.org/dtd/mybatis-3-mapper.dtd">
+<mapper namespace="com.hdvon.nmp.mapper.TranspondserverMappingMapper">
+    <resultMap id="BaseResultMap" type="com.hdvon.nmp.vo.TranspondserverMappingVo">
+        <id column="id" jdbcType="VARCHAR" property="id" />
+        <result column="project_id" jdbcType="VARCHAR"  property="projectId" />
+        <result column="transserver_id" jdbcType="VARCHAR"  property="transserverId" />
+        <result column="project_name" jdbcType="VARCHAR"  property="projectName" />
+    	<result column="project_code" jdbcType="VARCHAR"  property="projectCode" />
+    </resultMap>
+
+    <sql id="Customer_Column_List">
+        t.id,t.project_id,t.transserver_id,t.project_name,t.project_code
+    </sql>
+    
+    <select id="selectByParam" parameterType="map" resultMap="BaseResultMap">
+      select <include refid="Customer_Column_List"></include> from t_transpondserver_mapping t ,t_transpond_server a
+      <where>
+          a.id = t.transserver_id and a.enabled in (0,1)
+          <if test="transpondserverId != null and transpondserverId !=''">
+             and t.transserver_id=#{transpondserverId}
+          </if>
+      </where>
+    </select>
+
+	<select id="selectProjectByTransserverIds" parameterType="java.util.List" resultMap="BaseResultMap">
+		select <include refid="Customer_Column_List"/> from t_transpondserver_mapping t ,t_transpond_server a
+    	<where>
+            a.id = t.transserver_id and a.enabled in (0,1)
+    		<if test="transserverIds != null">
+    			<foreach collection="transserverIds" item="transserverId" index="index"
+		            open=" and t.transserver_id in(" close=")" separator=",">
+		            #{transserverId}
+		        </foreach>
+    		</if>
+    	</where>
+	</select>
+
+    <!--查询转发服务器是否关联项目-->
+    <select id="selectTranServerProject"  resultType="int" parameterType="map">
+        SELECT count(t.id)
+        FROM t_transpondserver_mapping t, t_project p ,t_transpond_server a
+        <where>
+            t.project_id = p.id and a.id = t.transserver_id and a.enabled in (0,1)
+            and t.`project_id` in
+            <foreach collection="projectIds" item="item" open="(" close=")"  separator=",">
+                #{item}
+            </foreach>
+        </where>
+    </select>
+
+</mapper>

@@ -1,0 +1,11 @@
+Manifest-Version: 1.0
+Implementation-Title: nmp-sip
+Implementation-Version: 0.0.1-SNAPSHOT
+Built-By: Administrator
+Implementation-Vendor-Id: com.hdvon.sip
+Build-Jdk: 1.8.0_171
+Implementation-URL: http://projects.spring.io/spring-boot/nmp-parent/n
+ mp-sip/
+Created-By: Maven Integration for Eclipse
+Implementation-Vendor: Pivotal Software, Inc.
+

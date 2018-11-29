@@ -1,0 +1,139 @@
+{
+	"properties": {
+		"id": {
+			"type": "text"
+		},
+		"cameraId": {
+			"type": "keyword"
+		},
+		"deviceId": {
+			"type": "long"
+		},
+		"deviceName": {
+			"type": "text",
+			"analyzer": "index_ansj",
+			"search_analyzer": "query_ansj"
+		},
+		"deviceCode": {
+			"type": "keyword"
+		},
+		"deviceType": {
+			"type": "integer"
+		},
+		"status": {
+			"type": "integer"
+		},
+		"userId": {
+			"type": "keyword"
+		},
+		"account": {
+			"type": "text",
+			"analyzer": "index_ansj",
+			"search_analyzer": "query_ansj"
+		},
+		"orgId": {
+			"type": "long"
+		},
+		"orgName": {
+			"type": "text",
+			"analyzer": "index_ansj",
+			"search_analyzer": "query_ansj"
+		},
+		"orgCode": {
+			"type": "keyword"
+		},
+		"type": {
+			"type": "integer"
+		},
+		"addressId": {
+			"type": "long"
+		},
+		"addressName": {
+			"type": "text",
+			"analyzer": "index_ansj",
+			"search_analyzer": "query_ansj"
+		},
+		"addressCode": {
+			"type": "keyword"
+		},
+		"projectId": {
+			"type": "keyword"
+		},
+		"projectName": {
+			"type": "text",
+			"analyzer": "index_ansj",
+			"search_analyzer": "query_ansj"
+		},
+		"deviceCompany": {
+			"type": "text",
+			"analyzer": "index_ansj",
+			"search_analyzer": "query_ansj"
+		},
+		"encodeserverId": {
+			"type": "keyword"
+		},
+		"ip": {
+			"type": "text"
+		},
+		"encodeserverName": {
+			"type": "text",
+			"analyzer": "index_ansj",
+			"search_analyzer": "query_ansj"
+		},
+		"positionType": {
+			"type": "long"
+		},
+		"collectionCategory": {
+			"type": "long"
+		},
+		"functionalType": {
+			"type": "long"
+		},
+		"constructionUnit": {
+			"type": "text",
+			"analyzer": "index_ansj",
+			"search_analyzer": "query_ansj"
+		},
+		"urbanConstructionUnit": {
+			"type": "text",
+			"analyzer": "index_ansj",
+			"search_analyzer": "query_ansj"
+		},
+		"installAddress": {
+			"type": "text",
+			"analyzer": "index_ansj",
+			"search_analyzer": "query_ansj"
+		},
+		"permissionValue": {
+			"type": "text"
+		},
+		"location": {
+			"type": "geo_point"
+		},
+		"permanent": {
+			"type": "integer"
+		},
+		"latitude": {
+			"type": "double"
+		},
+		"longitude": {
+			"type": "double"
+		},
+		"startDate": {
+			"type": "date",
+			"format": "yyyy-MM-dd HH:mm:ss|| yyy-MM-dd||epoch_millis"
+		},
+		"endDate": {
+			"type": "date",
+			"format": "yyyy-MM-dd HH:mm:ss|| yyy-MM-dd||epoch_millis"
+		},
+		"createDate": {
+			"type": "date",
+			"format": "yyyy-MM-dd HH:mm:ss|| yyy-MM-dd||epoch_millis"
+		},
+		"updateDate": {
+			"type": "date",
+			"format": "yyyy-MM-dd HH:mm:ss|| yyy-MM-dd||epoch_millis"
+		}
+	}
+}

@@ -1,0 +1,142 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<!DOCTYPE mapper PUBLIC "-//mybatis.org//DTD Mapper 3.0//EN" "http://mybatis.org/dtd/mybatis-3-mapper.dtd">
+<mapper namespace="com.hdvon.nmp.mapper.ResourceroleMapper">
+  <resultMap id="BaseResultMap" type="com.hdvon.nmp.vo.ResourceroleVo">
+    <id column="id" jdbcType="VARCHAR" property="id" />
+    <result column="name" jdbcType="VARCHAR"  property="name" />
+    <result column="description" jdbcType="VARCHAR"  property="description" />
+    <result column="is_menu_assigned" jdbcType="INTEGER"  property="isMenuAssigned" />
+    <result column="is_perm_assigned" jdbcType="INTEGER"  property="isPermAssigned" />
+    <result column="orderby" jdbcType="INTEGER"  property="orderby" />
+    <result column="pid" jdbcType="VARCHAR"  property="pid" />
+    <result column="permissionplan_id" jdbcType="VARCHAR"  property="permissionplanId" />
+    <result column="is_check" jdbcType="VARCHAR"  property="idCheck" />
+    <association property="parentName" select="queryParentName" column="pid"/>
+  </resultMap>
+
+  <sql id="Customer_Column_List">
+    t.id,t.name,t.description,t.is_menu_assigned,t.is_perm_assigned,t.orderby,t.pid
+  </sql>
+    
+    <select id="selectByParam" parameterType="map" resultMap="BaseResultMap">
+      select
+      <include refid="Customer_Column_List"></include>
+      from t_resourcerole t
+      <where>
+          <if test="pidOrId != null and pidOrId != ''">
+              and (t.pid = #{pidOrId} or t.id = #{pidOrId})
+          </if>
+          <if test="likeName != null and likeName != ''">
+              and t.name like concat('%',#{likeName}, '%')
+          </if>
+          <if test="userIds != null and userIds.size() > 0">
+              and t.id in (
+                  SELECT ur.`resourcerole_id` FROM t_user_resourcerole ur
+                  <where>
+                      <foreach close=")" collection="userIds" item="item" open=" and ur.user_id in (" separator=",">
+                          #{item}
+                      </foreach>
+                  </where>
+              )
+          </if>
+          <if test="id != null">
+              and t.id = #{id}
+          </if>
+          <if test="permissionplanId != null">
+              and t.id in (
+                select r.`resourcerole_id` from t_permissionplan_resourcerole r where r.permissionplan_id = #{permissionplanId}
+              )
+          </if>
+      </where>
+       ORDER BY t.create_time desc 
+    </select>
+  
+    <select id="queryParentName" resultType="String">
+        select `name` from t_resourcerole where id = #{pid}
+    </select>
+
+	<!-- 根据 资源角色对应的用户-->
+	<select id="selectUserIdsByParam" parameterType="map" resultType="String">
+	  SELECT  u.id from t_user u,t_resourcerole res ,t_user_resourcerole ures
+	  <where>
+	      u.id=ures.user_id and ures.resourcerole_id=res.id
+	       <if test="resourceroleIds != null and resourceroleIds.size() > 0">
+            <foreach collection="resourceroleIds" open=" and res.id in (" close=")" item="item" separator=",">
+                #{item}
+            </foreach>
+        </if>
+	  </where>
+	</select>
+	
+	<!-- 资源角色用户 -->
+	<select id="selectResourceByParam" parameterType="map" resultType="com.hdvon.nmp.vo.ResourceroleVo">
+	 SELECT `user`.id as userId ,res.id ,res.`name` from t_user user, t_resourcerole res ,t_user_resourcerole ures 
+     where `user`.id= ures.user_id and ures.resourcerole_id=res.id
+      <if test="userIds != null and userIds .size() > 0">
+          <foreach collection="userIds " open=" and user.id in (" close=")" item="item" separator=",">
+              #{item}
+          </foreach>
+       </if>
+     GROUP BY userId ,id
+	</select>
+
+
+
+    <!--&lt;!&ndash; 查询用户资源角色 &ndash;&gt;-->
+    <!--<select id="queryResourceRolesByUserId" resultMap="BaseResultMap">-->
+        <!--select-->
+        <!--<include refid="Customer_Column_List" />-->
+        <!--from-->
+        <!--t_resourcerole t,t_user_resourcerole ur-->
+        <!--<where>-->
+            <!--and t.id = ur.resourcerole_id-->
+            <!--<if test="userIds != null">-->
+	            <!--<foreach close=")" collection="userIds" item="item" open=" and ur.user_id in (" separator=",">-->
+	              <!--#{item}-->
+	            <!--</foreach>-->
+            <!--</if>-->
+        <!--</where>-->
+    <!--</select>-->
+
+    <!--<select id="queryResourceRoles" resultMap="BaseResultMap">-->
+        <!--select-->
+        <!--<include refid="Customer_Column_List" />-->
+        <!--from-->
+        <!--t_resourcerole t-->
+        <!--<where>-->
+            <!--<if test="pidOrId != null and pidOrId != ''">-->
+                <!--and (t.pid = #{pidOrId} or t.id = #{pidOrId})-->
+            <!--</if>-->
+            <!--<if test="likeName != null and likeName != ''">-->
+                <!--and t.name like concat('%',#{likeName}, '%')-->
+            <!--</if>-->
+        <!--</where>-->
+    <!--</select>-->
+	<!--<select id="selectResourcerolesInPermissionPlan" parameterType="map" resultMap="BaseResultMap">-->
+		<!--select-->
+			<!--<include refid="Customer_Column_List"/>,p.permissionplan_id-->
+		<!--from-->
+			<!--t_resourcerole t, t_permissionplan_resourceplan p-->
+		<!--where-->
+			<!--p.permissionplan_id = #{permissionplanId}-->
+			<!--and t.id = p.resourcerole_id-->
+	<!--</select>-->
+	<!--&lt;!&ndash; 查询所有资源角色以及权限预案关联的资源角色并设置状态 &ndash;&gt;-->
+	<!--<select id="selectResourcerolesByPermissionPlanId" parameterType="java.lang.String" resultMap="BaseResultMap">-->
+		<!--select-->
+			<!--<include refid="Customer_Column_List"/>,-->
+			<!--(select r.name from t_resourcerole r where r.id = t.pid) parentName,-->
+			<!--(SELECT IF(COUNT(1)>0,1,0) FROM t_permissionplan_resourcerole pr WHERE pr.resourcerole_id = t.`id` AND pr.permissionplan_id= #{permissionplanId}) is_check-->
+		<!--from-->
+			<!--t_resourcerole t-->
+	<!--</select>-->
+	
+	<!--<select id="selectResourceroleInfoById" parameterType="java.lang.String" resultMap="BaseResultMap">-->
+		<!--select-->
+			<!--<include refid="Customer_Column_List"/>-->
+			<!--&lt;!&ndash; (select r.name from t_resourcerole r where r.id = t.pid) parentName, &ndash;&gt;-->
+		<!--from-->
+			<!--t_resourcerole t-->
+		<!--where t.id = #{id}-->
+	<!--</select>-->
+</mapper>

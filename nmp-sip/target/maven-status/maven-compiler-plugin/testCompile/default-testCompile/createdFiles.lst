@@ -1,0 +1,14 @@
+com\hdvon\sip\app\PresetSearchClientTest.class
+com\hdvon\sip\app\MediaClientTest$MediaPlayThread.class
+com\hdvon\sip\app\MediaSearchClientTest$MediaSearchThread.class
+com\hdvon\sip\app\VideotapeClientTest.class
+com\hdvon\sip\app\CloudControlClientTest.class
+com\hdvon\sip\app\HearbeatClientTest.class
+com\hdvon\sip\app\CruiseClientTest.class
+com\hdvon\sip\app\MediaSearchClientTest.class
+com\hdvon\sip\app\DeviceStatusClientTest.class
+com\hdvon\sip\app\PresetClientTest.class
+com\hdvon\sip\app\ReisterServiceTest$1.class
+com\hdvon\sip\SipServiceTest.class
+com\hdvon\sip\app\MediaClientTest.class
+com\hdvon\sip\app\ReisterServiceTest.class

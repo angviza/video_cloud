@@ -1,0 +1,166 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<!DOCTYPE mapper PUBLIC "-//mybatis.org//DTD Mapper 3.0//EN" "http://mybatis.org/dtd/mybatis-3-mapper.dtd">
+<mapper namespace="com.hdvon.nmp.mapper.DepartmentMapper">
+  <resultMap id="BaseResultMap" type="com.hdvon.nmp.vo.DepartmentVo">
+    <id column="id" jdbcType="VARCHAR" property="id" />
+    <result column="name" jdbcType="VARCHAR"  property="name" />
+    <result column="pid" jdbcType="VARCHAR"  property="pid" />
+    <result column="dep_code" jdbcType="VARCHAR"  property="depCode" />
+    <result column="parentDepCode" jdbcType="VARCHAR"  property="parentDepCode" />
+    <result column="dep_code_split" jdbcType="VARCHAR"  property="depCodeSplit" />
+    <result column="is_constructor" jdbcType="INTEGER"  property="isConstructor" />
+    <result column="is_builder" jdbcType="INTEGER"  property="isBuilder" />
+    <result column="contactor" jdbcType="VARCHAR"  property="contactor" />
+    <result column="telelno" jdbcType="VARCHAR"  property="telelno" />
+    <result column="mobile" jdbcType="VARCHAR"  property="mobile" />
+    <result column="orderby" jdbcType="INTEGER"  property="orderby" />
+    <result column="address" jdbcType="VARCHAR"  property="address" />
+    <result column="description" jdbcType="VARCHAR"  property="description" />
+    <result column="org_id" jdbcType="VARCHAR"  property="orgId" />
+    <result column="create_time" jdbcType="TIMESTAMP"  property="createTime" />
+    <result column="update_time" jdbcType="TIMESTAMP"  property="updateTime" />
+    <!--<result column="create_user" jdbcType="VARCHAR"  property="createUser" />-->
+    <!--<result column="update_user" jdbcType="VARCHAR"  property="updateUser" />-->
+    <result column="parentDepName" property="parentDepName" />
+    <result column="orgName" property="orgName" />
+    <result column="nodeType" property="nodeType"/>
+  </resultMap>
+
+  <sql id="Customer_Column_List">
+    t.id,t.name,t.pid,t.dep_code,t.dep_code_split,t.is_constructor,t.is_builder,t.contactor,t.telelno,t.mobile,t.orderby,t.address,t.description,t.org_id,t.create_time,t.update_time
+  </sql>
+
+    <select id="selectByParam" parameterType="map" resultMap="BaseResultMap">
+        SELECT
+        <include refid="Customer_Column_List"></include>
+        FROM  t_department t
+        <where>
+            <if test="pid != null and pid != ''">
+              and t.pid = #{pid}
+            </if>
+            <if test="departmentUserId">
+                and t.id in(
+                  SELECT d.`department_id` FROM t_user_department_data d WHERE d.`user_id` = #{departmentUserId}
+                )
+            </if>
+            <if test="codeList != null and codeList.size()>0">
+	     	   and t.dep_code in
+	     	    <foreach collection="codeList" item="item" open="(" close=")"  separator=",">
+		            #{item}
+		        </foreach>
+	     </if>
+        </where>
+    </select>
+
+  <!-- 查询部门下面所有的子部门 -->
+  <select id="selectChildDepartmentsByPid" parameterType="java.lang.String" resultMap="BaseResultMap">
+      SELECT
+      <include refid="Customer_Column_List"/>,
+      (SELECT o.`name` FROM t_organization o WHERE o.`id` = t.org_id) orgName,
+      (SELECT tt.`dep_code` FROM t_department tt WHERE tt.`id` = t.pid) parentDepCode,
+      (SELECT tt.`name` FROM t_department tt WHERE tt.`id` = t.pid) parentDepName,
+      'department' as nodeType
+      FROM t_department t
+      <where>
+          <!-- <if test="id != null and id != ''">
+              and FIND_IN_SET(t.id,getChildrenDept(#{id}))
+          </if> -->
+          <!-- <if test="id != null and id != ''">
+          	  and (t.id=#{id} or t.pid=#{id})
+          </if> -->
+           <if test="deptIds != null and deptIds.size()>0">
+	           and t.id in
+	            <foreach collection="deptIds" item="item" open="(" close=")"  separator=",">
+	            #{item}
+	        </foreach>
+	     </if>
+	     <if test="codeList != null and codeList.size()>0">
+	     	   and t.dep_code in
+	     	    <foreach collection="codeList" item="item" open="(" close=")"  separator=",">
+		            #{item}
+		        </foreach>
+	     </if>
+	     <if test="nameList != null and nameList.size()>0">
+	     	   and t.name in
+	     	    <foreach collection="nameList" item="item" open="(" close=")"  separator=",">
+		            #{item}
+		        </foreach>
+	     </if>
+	     <if test="pcodeList != null and pcodeList.size()>0">
+	     	   and t.parent_dep_code in
+	     	    <foreach collection="pcodeList" item="item" open="(" close=")"  separator=",">
+		            #{item}
+		        </foreach>
+	     </if>
+          <if test="search != null and search != ''">
+              and t.name like concat('%',#{search},'%')
+          </if>
+          <if test = "is_constructor != null">
+          	  and t.is_constructor = #{is_constructor}
+          </if>
+          <if test = "is_builder != null">
+          	  and t.is_builder = #{is_builder}
+          </if>
+          <!-- <if test="departmentIds !=null and departmentIds.size() > 0">
+              and t.id in
+              <foreach collection="departmentIds" item="item" open="(" close=")"  separator="," >
+                #{item}
+            </foreach>
+          </if> -->
+      </where>
+      order by t.create_time desc
+  </select>
+  <select id="selectDepartmentInfoById" parameterType="java.lang.String" resultMap="BaseResultMap">
+  		 SELECT
+      <include refid="Customer_Column_List"/>,
+      (SELECT o.`name` FROM t_organization o WHERE o.`id` = t.org_id) orgName,
+      (SELECT tt.`name` FROM t_department tt WHERE tt.`id` = t.pid) parentDepName
+      FROM t_department t
+      <where>
+          <!-- <if test="id != null and id != ''">
+              and FIND_IN_SET(t.id,getChildrenDept(#{id}))
+          </if> -->
+          <if test="id != null and id != ''">
+          	  and t.id=#{id}
+          </if>
+      </where>
+  </select>
+  <!-- 根据项目id查询出部门列表 -->
+  <select id="selectDepartMentList" parameterType="java.lang.String" resultType="com.hdvon.nmp.vo.DepartmentVo">
+    SELECT de.id,de.`name`,de.dep_code,de.is_builder,de.is_constructor,de.create_time,de.update_time
+	FROM t_department de , t_project_department pd
+	where pd.builder_dep_id=de.id
+    and pd.project_id=#{projectId}
+    order by create_time desc
+  </select>
+ 
+ <!-- 用户可管理部门 -->
+ <select id="selectDepartmentByUserId" parameterType="java.lang.String" resultType="com.hdvon.nmp.vo.DepartmentVo">
+    SELECT <include refid="Customer_Column_List"/>,'department' as nodeType
+   FROM t_department t,t_user_department_data udd  where t.id=udd.department_id
+ </select>
+
+<!-- 查询部门树列表，并标记预案共享设置的部门  -->
+<select id="selectShowDeptTreeByPlanId" parameterType="map" resultType="com.hdvon.nmp.vo.DepartmentVo">
+	select <include refid="Customer_Column_List"/>,
+		(select IF(COUNT(1)>0,1,0) from t_plan_share ps where ps.plan_id = #{planId} and ps.department_id = t.id) status
+	from t_department t
+</select>
+
+<select id="selectDepartmentUserCount" parameterType="map" resultType="com.hdvon.nmp.vo.DepartmentVo">
+      SELECT dep.id ,dep.`name`,dep.dep_code as depCode,
+		(SELECT d. NAME FROM t_department d WHERE dep.pid = d.id) AS parentDepName
+		from t_department dep
+		LEFT JOIN t_user_department ud on ud.dep_id = dep.id
+		LEFT JOIN t_user u on  u.id = ud.user_id
+		<where>
+		 <if test="departmentIds !=null and departmentIds.size() > 0">
+		 <foreach collection="departmentIds" open="and dep.id IN(" close=")" item="item" separator=",">
+	       #{item}
+	      </foreach>
+	     </if>
+	  </where>
+	  GROUP BY dep.id
+ </select>
+
+</mapper>

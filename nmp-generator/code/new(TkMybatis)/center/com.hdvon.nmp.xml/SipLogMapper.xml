@@ -1,0 +1,24 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<!DOCTYPE mapper PUBLIC "-//mybatis.org//DTD Mapper 3.0//EN" "http://mybatis.org/dtd/mybatis-3-mapper.dtd">
+<mapper namespace="com.hdvon.nmp.mapper.SipLogMapper">
+    <resultMap id="BaseResultMap" type="com.hdvon.nmp.vo.SipLogVo">
+        <id column="id" jdbcType="VARCHAR" property="id" />
+        <result column="transaction_id" jdbcType="VARCHAR"  property="transactionId" />
+        <result column="call_id" jdbcType="VARCHAR"  property="callId" />
+        <result column="user_id" jdbcType="VARCHAR"  property="userId" />
+        <result column="method" jdbcType="VARCHAR"  property="method" />
+        <result column="content" jdbcType="VARCHAR"  property="content" />
+        <result column="req_ip" jdbcType="VARCHAR"  property="reqIp" />
+        <result column="device_id" jdbcType="VARCHAR"  property="deviceId" />
+        <result column="param" jdbcType="LONGVARCHAR"  property="param" />
+        <result column="play_status" jdbcType="VARCHAR"  property="playStatus" />
+        <result column="device_status" jdbcType="VARCHAR"  property="deviceStatus" />
+        <result column="req_time" jdbcType="TIMESTAMP"  property="reqTime" />
+        <!--<result column="update_time" jdbcType="TIMESTAMP"  property="updateTime" />-->
+    </resultMap>
+
+    <sql id="Customer_Column_List">
+        t.id,t.transaction_id,t.call_id,t.user_id,t.method,t.content,t.req_ip,t.device_id,t.param,t.play_status,t.device_status,t.req_time
+    </sql>
+
+</mapper>

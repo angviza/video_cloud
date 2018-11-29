@@ -1,0 +1,70 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<!DOCTYPE mapper PUBLIC "-//mybatis.org//DTD Mapper 3.0//EN" "http://mybatis.org/dtd/mybatis-3-mapper.dtd">
+<mapper namespace="com.hdvon.nmp.mapper.ProjectMapper">
+  <resultMap id="BaseResultMap" type="com.hdvon.nmp.vo.ProjectVo">
+    <id column="id" jdbcType="VARCHAR" property="id" />
+    <result column="name" jdbcType="VARCHAR"  property="name" />
+    <result column="code" jdbcType="VARCHAR"  property="code" />
+    <result column="class_type" jdbcType="INTEGER"  property="classType" />
+    <result column="description" jdbcType="VARCHAR"  property="description" />
+    <result column="orderby" jdbcType="INTEGER"  property="orderby" />
+    <result column="contactor" jdbcType="VARCHAR"  property="contactor" />
+    <result column="teleno" jdbcType="VARCHAR"  property="teleno" />
+    <result column="mobile" jdbcType="VARCHAR"  property="mobile" />
+    <result column="email" jdbcType="VARCHAR"  property="email" />
+    <result column="construtor_name" property="construtorName" />
+    <result column="builder_name" property="builderName" />
+    <result column="create_time" jdbcType="TIMESTAMP"  property="createTime" />
+    <!--<result column="update_time" jdbcType="TIMESTAMP"  property="updateTime" />-->
+    <!--<result column="create_user" jdbcType="VARCHAR"  property="createUser" />-->
+    <!--<result column="update_user" jdbcType="VARCHAR"  property="updateUser" />-->
+  </resultMap>
+
+  <sql id="Customer_Column_List">
+    t.id,t.name,t.code,t.class_type,t.description,t.orderby,t.contactor,t.teleno,t.mobile,t.email
+  </sql>
+  
+ 
+	<!-- 根据项目id查询项目详细信息 -->
+	<select id="selectProjectInfoById" parameterType="map" resultType="com.hdvon.nmp.vo.ProjectVo">
+		select
+			distinct p.id,p.name,p.code,p.class_type as classType,p.description,p.orderby,p.contactor,p.teleno,p.mobile,p.email,
+			(select d1.id from t_department d1 where d1.id = pd.constructor_dep_id and d1.is_constructor = 1) constructorDepId,
+			(select d.name from t_department d where d.id = pd.constructor_dep_id and d.is_constructor = 1) construtorName,
+			(select dd1.id from t_department dd1 where dd1.id = pd.builder_dep_id and dd1.is_builder = 1) builderDepId,
+			(select dd.name from t_department dd where dd.id = pd.builder_dep_id and dd.is_builder = 1) builderName
+		from
+			t_project p,  t_project_department pd, t_department dept
+		where p.id = pd.project_id
+			and (dept.id = pd.constructor_dep_id or dept.id = pd.builder_dep_id)
+			and p.id=#{projectDepartmentVo.projectId}
+	</select>
+	<!-- 查询项目信息列表 -->
+	<select id="selectProjectList" parameterType="map" resultType="com.hdvon.nmp.vo.ProjectVo">
+		 select
+			distinct p.id,p.name,p.code,p.class_type as classType,p.description,p.orderby,p.contactor,p.teleno,p.mobile,p.email,p.update_time as updateTime,
+			(select d.name from t_department d where d.id = pd.constructor_dep_id and d.is_constructor = 1) construtorName,
+			(select dd.name from t_department dd where dd.id = pd.builder_dep_id and dd.is_builder = 1) builderName
+		from
+			t_project p,  t_project_department pd, t_department dept
+		where p.id = pd.project_id
+			and (dept.id = pd.constructor_dep_id or dept.id = pd.builder_dep_id)
+			 <if test="deptIds != null and deptIds.size() > 0">
+                and dept.id in
+                 <foreach collection="deptIds" item="item" open="(" close=")"  separator=",">
+	                #{item}
+	            </foreach>
+          	</if>
+			<if test="search != null and search != ''">
+		       and p.name like concat('%',#{search},'%')
+		    </if>
+		    <if test="nameList != null and nameList.size() > 0">
+                and p.name in
+                 <foreach collection="nameList" item="item" open="(" close=")"  separator=",">
+	                #{item}
+	            </foreach>
+          	</if>
+		    order by p.create_time desc
+	</select>
+
+</mapper>

@@ -1,0 +1,17 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<!DOCTYPE mapper PUBLIC "-//mybatis.org//DTD Mapper 3.0//EN" "http://mybatis.org/dtd/mybatis-3-mapper.dtd">
+<mapper namespace="com.hdvon.quartz.mapper.CameraReportMapper">
+    <resultMap id="BaseResultMap" type="com.hdvon.quartz.entity.CameraReport">
+        <id column="id" jdbcType="VARCHAR" property="id" />
+        <result column="camera_id" jdbcType="VARCHAR"  property="cameraId" />
+        <result column="sbbm" jdbcType="VARCHAR"  property="sbbm" />
+        <result column="sbmc" jdbcType="VARCHAR"  property="sbmc" />
+        <result column="total" jdbcType="INTEGER"  property="total" />
+        <result column="creat_time" jdbcType="TIMESTAMP"  property="creatTime" />
+    </resultMap>
+
+    <sql id="Customer_Column_List">
+        t.id,t.camera_id,t.sbbm,t.sbmc,t.total,t.creat_time
+    </sql>
+
+</mapper>

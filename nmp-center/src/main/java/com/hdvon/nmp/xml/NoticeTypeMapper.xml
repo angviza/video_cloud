@@ -1,0 +1,40 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<!DOCTYPE mapper PUBLIC "-//mybatis.org//DTD Mapper 3.0//EN" "http://mybatis.org/dtd/mybatis-3-mapper.dtd">
+<mapper namespace="com.hdvon.nmp.mapper.NoticeTypeMapper">
+    <resultMap id="BaseResultMap" type="com.hdvon.nmp.vo.NoticeTypeVo">
+        <id column="id" jdbcType="VARCHAR" property="id" />
+        <result column="name" jdbcType="VARCHAR"  property="name" />
+        <result column="icon" jdbcType="VARCHAR"  property="icon" />
+        <result column="description" jdbcType="VARCHAR"  property="description" />
+        <result column="unread" jdbcType="VARCHAR"  property="unread" />
+        <result column="content" jdbcType="VARCHAR"  property="content" />
+        <result column="time_setting" jdbcType="VARCHAR"  property="timeSetting" />
+        <result column="create_time" jdbcType="TIMESTAMP"  property="createTime" />
+    </resultMap>
+
+    <sql id="Customer_Column_List">
+        t.id,t.name,t.icon,t.description
+    </sql>
+
+    <!-- 公告类型未读列表 -->
+    <select id="queryUnReadNoticeType" parameterType="java.lang.String" resultMap="BaseResultMap">
+        SELECT
+        (SELECT COUNT(1) FROM t_user_notice un , t_notice n WHERE un.`notice_Id` = n.`id` AND n.`notice_type_id` = nt.id AND un.flag = 0 AND un.`user_Id` =  #{userId}) unread,
+        (SELECT n.`content` FROM t_user_notice un , t_notice n WHERE un.`notice_Id` = n.`id` AND n.`notice_type_id` = nt.id AND un.`user_Id` =  #{userId} ORDER BY n.`create_time` DESC LIMIT 1) content,
+        (SELECT n.`create_time` FROM t_user_notice un , t_notice n WHERE un.`notice_Id` = n.`id` AND n.`notice_type_id` = nt.id AND un.`user_Id` =  #{userId} ORDER BY n.`create_time` DESC LIMIT 1) createTime,
+        nt.`name` , nt.`icon` , nt.`id`
+        FROM t_notice_type nt
+        WHERE nt.`id` IN (
+        SELECT n.`notice_type_id`
+        FROM t_user_notice un , t_notice n
+        WHERE un.`notice_Id` = n.`id`
+        <if test="userId != null and userId != ''">
+          AND un.`user_Id` = #{userId}
+        </if>
+        <if test="flag != null">
+            AND un.`flag` = #{flag}
+        </if>
+        )
+    </select>
+
+</mapper>

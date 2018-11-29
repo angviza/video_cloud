@@ -1,0 +1,24 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<!DOCTYPE mapper PUBLIC "-//mybatis.org//DTD Mapper 3.0//EN" "http://mybatis.org/dtd/mybatis-3-mapper.dtd">
+<mapper namespace="com.hdvon.nmp.mapper.PlanShareMapper">
+    <resultMap id="BaseResultMap" type="com.hdvon.nmp.vo.PlanShareVo">
+        <id column="id" jdbcType="VARCHAR" property="id" />
+        <result column="plan_id" jdbcType="VARCHAR"  property="planId" />
+        <result column="department_id" jdbcType="VARCHAR"  property="departmentId" />
+    </resultMap>
+
+    <sql id="Customer_Column_List">
+        t.id,t.plan_id,t.department_id
+    </sql>
+    
+    <select id="selectByParam" parameterType="map" resultMap="BaseResultMap">
+      select <include refid="Customer_Column_List"></include> from t_plan_share t
+      <where>
+          <if test="planId != null and planId !=''">
+             and t.plan_id=#{planId}
+          </if>
+      </where>
+    </select>
+
+
+</mapper>

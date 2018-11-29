@@ -1,0 +1,74 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<!DOCTYPE mapper PUBLIC "-//mybatis.org//DTD Mapper 3.0//EN" "http://mybatis.org/dtd/mybatis-3-mapper.dtd">
+<mapper namespace="com.hdvon.nmp.mapper.RepUseranalysisMapper">
+    <resultMap id="BaseResultMap" type="com.hdvon.nmp.vo.RepUseranalysisVo">
+        <id column="id" jdbcType="VARCHAR" property="id" />
+        <result column="account" jdbcType="VARCHAR"  property="account" />
+        <result column="online_total" jdbcType="INTEGER"  property="onlineTotal" />
+        <result column="loigin_total" jdbcType="INTEGER"  property="loiginTotal" />
+        <result column="invite_total" jdbcType="INTEGER"  property="inviteTotal" />
+        <result column="replay_total" jdbcType="INTEGER"  property="replayTotal" />
+        <result column="download_total" jdbcType="INTEGER"  property="downloadTotal" />
+        <result column="control_total" jdbcType="INTEGER"  property="controlTotal" />
+        <result column="other_total" jdbcType="VARCHAR"  property="otherTotal" />
+        <result column="start_time" jdbcType="TIMESTAMP"  property="startTime" />
+        <result column="creat_time" jdbcType="TIMESTAMP"  property="creatTime" />
+        
+        <result column="user_id" jdbcType="VARCHAR"  property="userId" />
+        <result column="total" jdbcType="INTEGER"  property="total" />
+        <result column="departmentName" jdbcType="VARCHAR"  property="departmentName" />
+        
+    </resultMap>
+
+    <sql id="Customer_Column_List">
+        t.id,t.account,t.online_total,t.loigin_total,t.invite_total,t.replay_total,t.download_total,t.control_total,t.other_total,t.start_time,t.creat_time
+    </sql>
+    
+    <sql id="param_user_base">
+      <if test="account != null and account  !='' ">
+        and rus.account like concat('%',#{account},'%')
+      </if>
+      <if test="startDate != null and startDate  !='' ">
+         and DATE_FORMAT(rus.start_time,'%Y%m%d%H%i%s') &gt;= DATE_FORMAT(#{startDate},'%Y%m%d%H%i%s')
+      </if>
+       <if test="endDate != null and endDate  !='' ">
+         and DATE_FORMAT(rus.creat_time,'%Y%m%d%H%i%s') &lt;= DATE_FORMAT(#{endDate},'%Y%m%d%H%i%s')
+      </if>
+        <if test="departmentIds != null and departmentIds.size() > 0">
+            AND u.id IN(
+              SELECT ud.`user_id` FROM t_user_department ud
+              WHERE ud.`dep_id` in 
+              <foreach collection="departmentIds" item="item" open="(" close=")"  separator=",">
+                #{item}
+              </foreach>
+            )
+        </if>
+       <if test="roleIds != null and roleIds.size() > 0">
+            and role.id in
+            <foreach collection="roleIds" item="item" open="(" close=")"  separator=",">
+                #{item}
+            </foreach>
+       </if>
+    </sql>
+    
+    <select id="selectUseranalysisByadmin" parameterType="map" resultMap="BaseResultMap">
+      select t.user_id,t.account,SUM(t.online_total) as online_total ,SUM(t.loigin_total) as loigin_total,
+        SUM(t.invite_total) as invite_total,SUM(t.replay_total) AS replay_total ,SUM(t.download_total) AS download_total,SUM(t.control_total) AS control_total,
+		t.departmentName FROM
+		(
+		select  u.id as user_id,rus.account,rus.online_total,rus.loigin_total,rus.invite_total,rus.replay_total,rus.download_total,rus.control_total ,
+		 (SELECT d.name FROM t_user_department ud , t_department d WHERE ud.user_id = u.id AND ud.dep_id = d.id limit 1) departmentName
+		from t_user u,t_rep_useranalysis rus
+		where u.account=rus.account
+		<include refid="param_user_base"></include>
+		) t 
+       GROUP BY account 
+       <if test="sortProp != null and sortProp  !='' ">
+        <if test="sortProp=='online_total' "> ORDER BY online_total <if test="order=='desc' "> desc</if> </if>
+        <if test="sortProp=='loigin_total' ">ORDER BY loigin_total <if test="order=='desc' "> desc</if> </if>
+        <if test="sortProp=='total' ">ORDER BY invite_total <if test="order=='desc' "> desc</if> </if>
+      </if>
+
+    </select>
+
+</mapper>

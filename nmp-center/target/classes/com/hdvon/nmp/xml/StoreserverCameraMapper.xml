@@ -1,0 +1,68 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<!DOCTYPE mapper PUBLIC "-//mybatis.org//DTD Mapper 3.0//EN" "http://mybatis.org/dtd/mybatis-3-mapper.dtd">
+<mapper namespace="com.hdvon.nmp.mapper.StoreserverCameraMapper">
+    <resultMap id="BaseResultMap" type="com.hdvon.nmp.vo.StoreserverCameraVo">
+        <id column="id" jdbcType="VARCHAR" property="id" />
+        <result column="camera_id" jdbcType="VARCHAR"  property="cameraId" />
+        <result column="storeserver_id" jdbcType="VARCHAR"  property="storeserverId" />
+        <result column="camera_name" jdbcType="VARCHAR"  property="cameraName" />
+        <result column="camera_no" jdbcType="VARCHAR"  property="cameraNo" />
+        <result column="camera_type" jdbcType="INTEGER"  property="cameraType" />
+        <result column="status" jdbcType="INTEGER"  property="status" />
+        <result column="keep_days" jdbcType="INTEGER"  property="keepDays" />
+    </resultMap>
+
+    <sql id="Customer_Column_List">
+        t.id,t.camera_id,t.storeserver_id,t.camera_name,t.camera_no,t.camera_type,t.status,t.keep_days
+    </sql>
+
+    <!-- 根据摄像机id集合查询摄像机列表 -->
+    <select id="selectCamerasByIds" parameterType="java.util.List" resultType="com.hdvon.nmp.vo.StoreserverCameraVo">
+    	select
+    		 c.id as cameraId, d.SBMC as cameraName, d.SBBM as cameraNo, d.SXJLX as cameraType
+    	from 
+    	 	t_camera c,t_device d
+    	 where c.device_id = d.id
+    	 	<if test="deviceIds != null">
+    	 		<foreach collection="deviceIds" item="deviceId" index="index"
+		            open=" and d.id in(" close=")" separator=",">
+		            #{deviceId}
+		        </foreach>
+    	 	</if>
+    </select>
+    
+    <!-- 查询当前用户存储服务器下所有的摄像机 -->
+    <select id="selectUserStoreserverCamera" parameterType="map" resultType="com.hdvon.nmp.vo.StoreserverCameraVo">
+    	SELECT sc.id, camera.id as cameraId ,device.SBMC as cameraName,sc.storeserver_id as storeserverId,device.id as deviceId,
+		device.SBBM as cameraNo,device.SXJLX as cameraType,sc.status, sc.keep_days as keepDays
+			FROM t_device device ,t_camera  camera,t_camera_mapping cm ,t_store_server ss,t_storeserver_camera sc
+		<where>
+			ss.id=sc.storeserver_id and camera.id=sc.camera_id and device.id=camera.device_id and camera.id=cm.camera_id
+			<if test="id != null and id != ''">
+				and sc.id = #{id}
+			</if>
+			<if test="storeserverId != null and storeserverId != ''">
+				and sc.storeserver_id = #{storeserverId}
+			</if>
+			<if test="cameraName != null and cameraName != ''">
+				and device.SBMC like concat('%',#{cameraName},'%')
+			</if>
+			<if test="cameraNo != null and cameraNo != ''">
+				and device.SBBM like concat('%',#{cameraNo},'%')
+			</if>
+			<if test="cameraType != null">
+				and device.SXJLX = #{cameraType}
+			</if>
+			<if test="status != null">
+				and sc.status != #{status}
+			</if>
+			<if test="!isAdmin and userId != null">
+				AND camera.id in (
+				SELECT t.`camera_id` FROM t_resourcerole_camera_permission t , t_user_resourcerole ur
+				WHERE t.`resoucerole_id` = ur.`resourcerole_id`
+				AND ur.`user_id` = #{userId}
+				)
+			</if>
+		</where>
+    </select>
+</mapper>

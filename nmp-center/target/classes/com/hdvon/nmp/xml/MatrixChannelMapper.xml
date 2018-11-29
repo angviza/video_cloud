@@ -1,0 +1,88 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<!DOCTYPE mapper PUBLIC "-//mybatis.org//DTD Mapper 3.0//EN" "http://mybatis.org/dtd/mybatis-3-mapper.dtd">
+<mapper namespace="com.hdvon.nmp.mapper.MatrixChannelMapper">
+  <resultMap id="BaseResultMap" type="com.hdvon.nmp.vo.MatrixChannelVo">
+    <id column="id" jdbcType="VARCHAR" property="id" />
+    <result column="name" jdbcType="VARCHAR"  property="name" />
+    <result column="devices_no" jdbcType="VARCHAR"  property="devicesNo" />
+    <result column="description" jdbcType="VARCHAR"  property="description" />
+    <result column="matrix_id" jdbcType="VARCHAR"  property="matrixId" />
+    <result column="matrix_name" jdbcType="VARCHAR"  property="matrixName" />
+    <!--<result column="create_time" jdbcType="TIMESTAMP"  property="createTime" />-->
+    <!--<result column="update_time" jdbcType="TIMESTAMP"  property="updateTime" />-->
+    <!--<result column="create_user" jdbcType="VARCHAR"  property="createUser" />-->
+    <!--<result column="update_user" jdbcType="VARCHAR"  property="updateUser" />-->
+  </resultMap>
+
+  <sql id="Customer_Column_List">
+    t.id,t.name,t.devices_no,t.description,t.matrix_id
+  </sql>
+  <sql id="Customer_Vo_List">
+    mc.id,mc.name,mc.devices_no as devicesNo,mc.description,mc.matrix_id as matrixId,m.name as matrixName,mc.create_time as createTime
+  </sql>
+  
+  <select id="selectByParam" parameterType="map" resultMap="BaseResultMap">
+      select <include refid="Customer_Column_List"></include> from t_matrix_channel t
+      <where>
+          <if test="matrixId != null and matrixId !=''">
+             and t.matrix_id=#{matrixId}
+          </if>
+      </where>
+  </select>
+  
+  <!-- 查询矩阵通道列表 -->
+  <select id="selectMatrixChannelList" parameterType="map" resultType="com.hdvon.nmp.vo.MatrixChannelVo">
+  	select
+  		<include refid="Customer_Vo_List"/>
+  	from
+  		t_matrix m, t_matrix_channel mc
+  	where m.id = mc.matrix_id
+  	<if test="matrixId != null and matrixId !=''">
+  		 and m.id = #{matrixId}
+  	</if>
+  	<if test="search !=null and search != ''">
+  		and mc.name like concat('%',#{search},'%')
+  	</if>
+  	<if test="channelNos != null and channelNos.size() > 0">
+           and mc.devices_no in
+            <foreach collection="channelNos" item="item" open="(" close=")"  separator=",">
+            	#{item}
+        	</foreach>
+     </if>
+  	order by createTime desc
+  </select>
+  <!-- 查询矩阵通道详细信息 -->
+  <select id="selectMatrixChannelById" parameterType="java.lang.String" resultType="com.hdvon.nmp.vo.MatrixChannelVo">
+  	select
+  		<include refid="Customer_Vo_List"/>
+  	from
+  		t_matrix m, t_matrix_channel mc
+  	where m.id = mc.matrix_id
+  		and mc.id =#{id}
+  </select>
+  <!-- 查询上墙预案关联的矩阵通道 -->
+  <select id="selectMatrixChannelByWallId" parameterType="java.lang.String" resultMap="BaseResultMap">
+  	select
+  		distinct <include refid="Customer_Column_List"/>
+  	from t_matrix_channel t,t_wallplan_camera wc
+  	where wc.wallplan_id = #{wallId}
+  		and wc.matrixchannel_id = t.id
+  </select>
+  
+  <select id="selectMatrixChannelsByMatrixIds" parameterType="java.util.List" resultMap="BaseResultMap">
+    	select <include refid="Customer_Column_List"/> from t_matrix_channel t
+    	<where>
+    		<if test="matrixIds != null">
+    			<foreach collection="matrixIds" item="matrixId" index="index"
+		            open=" and t.matrix_id in(" close=")" separator=",">
+		            #{matrixId}
+		        </foreach>
+    		</if>
+    	</where>
+    </select>
+    
+     <!-- 根据前面指定编码查询最大编码 -->
+    <select id="selectMaxCodeBycode" parameterType="map" resultType="java.lang.String">
+       SELECT MAX(devices_no) from t_matrix_channel where devices_no like concat('%',#{code},'%')
+    </select>
+</mapper>

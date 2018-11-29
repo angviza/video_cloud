@@ -1,0 +1,51 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<!DOCTYPE mapper PUBLIC "-//mybatis.org//DTD Mapper 3.0//EN" "http://mybatis.org/dtd/mybatis-3-mapper.dtd">
+<mapper namespace="com.hdvon.nmp.mapper.ProjectMappingMapper">
+    <resultMap id="BaseResultMap" type="com.hdvon.nmp.vo.ProjectMappingVo">
+        <id column="id" jdbcType="VARCHAR" property="id" />
+        <result column="project_id" jdbcType="VARCHAR"  property="projectId" />
+        <result column="sigserver_id" jdbcType="VARCHAR"  property="sigserverId" />
+        <result column="project_name" jdbcType="CHAR"  property="projectName" />
+    	<result column="project_code" jdbcType="VARCHAR"  property="projectCode" />
+    </resultMap>
+
+    <sql id="Customer_Column_List">
+        t.id,t.project_id,t.sigserver_id,t.project_name,t.project_code
+    </sql>
+    
+    <select id="selectByParam" parameterType="map" resultMap="BaseResultMap">
+      select <include refid="Customer_Column_List"></include> from t_project_mapping t ,t_sig_server a
+      <where>
+          a.id = t.sigserver_id and a.enabled in (0,1)
+	      <if test="sigserverId != null and sigserverId != ''">
+	        and t.sigserver_id = #{sigserverId}
+	      </if>
+      </where>
+   </select>
+   
+    <select id="selectProjectBySigserverIds" parameterType="java.util.List" resultMap="BaseResultMap">
+    	select <include refid="Customer_Column_List"/> from t_project_mapping t ,t_sig_server a
+    	<where>
+            a.id = t.sigserver_id and a.enabled in (0,1)
+    		<if test="sigserverIds != null">
+    			<foreach collection="sigserverIds" item="sigserverId" index="index"
+		            open=" and t.sigserver_id in(" close=")" separator=",">
+		            #{sigserverId}
+		        </foreach>
+    		</if>
+    	</where>
+    </select>
+
+    <!--查询中心信令是否关联项目-->
+    <select id="selectSigServerProject"  resultType="int" parameterType="map">
+        SELECT count(t.id)
+        FROM t_project_mapping t, t_project p ,t_sig_server a
+        <where>
+            t.project_id = p.id and a.id = t.sigserver_id and a.enabled in (0,1)
+            and t.`project_id` in
+            <foreach collection="projectIds" item="item" open="(" close=")"  separator=",">
+                #{item}
+            </foreach>
+        </where>
+    </select>
+</mapper>

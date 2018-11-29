@@ -1,0 +1,14 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<!DOCTYPE mapper PUBLIC "-//mybatis.org//DTD Mapper 3.0//EN" "http://mybatis.org/dtd/mybatis-3-mapper.dtd">
+<mapper namespace="com.hdvon.nmp.mapper.WallChannelMapper">
+    <resultMap id="BaseResultMap" type="com.hdvon.nmp.vo.WallChannelVo">
+        <id column="id" jdbcType="VARCHAR" property="id" />
+        <result column="rotate_id" jdbcType="VARCHAR"  property="rotateId" />
+        <result column="channel_id" jdbcType="VARCHAR"  property="channelId" />
+    </resultMap>
+
+    <sql id="Customer_Column_List">
+        t.id,t.rotate_id,t.channel_id
+    </sql>
+
+</mapper>

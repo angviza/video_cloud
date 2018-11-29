@@ -1,0 +1,19 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<!DOCTYPE mapper PUBLIC "-//mybatis.org//DTD Mapper 3.0//EN" "http://mybatis.org/dtd/mybatis-3-mapper.dtd">
+<mapper namespace="com.hdvon.nmp.mapper.PermissionplanInfoElMapper">
+    <resultMap id="BaseResultMap" type="com.hdvon.nmp.vo.PermissionplanInfoElVo">
+        <id column="id" jdbcType="VARCHAR" property="id" />
+        <result column="plan_id" jdbcType="VARCHAR"  property="planId" />
+        <result column="resourcerole_id" jdbcType="VARCHAR"  property="resourceroleId" />
+        <result column="user_id" jdbcType="VARCHAR"  property="userId" />
+        <result column="status" jdbcType="INTEGER"  property="status" />
+        <result column="plan_type" jdbcType="INTEGER"  property="planType" />
+        <result column="bgn_time" jdbcType="TIMESTAMP"  property="bgnTime" />
+        <result column="end_time" jdbcType="TIMESTAMP"  property="endTime" />
+    </resultMap>
+
+    <sql id="Customer_Column_List">
+        t.id,t.plan_id,t.resourcerole_id,t.user_id,t.status,t.plan_type,t.bgn_time,t.end_time
+    </sql>
+
+</mapper>

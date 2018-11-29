@@ -1,0 +1,17 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<!DOCTYPE mapper PUBLIC "-//mybatis.org//DTD Mapper 3.0//EN" "http://mybatis.org/dtd/mybatis-3-mapper.dtd">
+<mapper namespace="com.hdvon.nmp.mapper.CameraMappingMapper">
+  <resultMap id="BaseResultMap" type="com.hdvon.nmp.vo.CameraMappingVo">
+    <id column="id" jdbcType="VARCHAR" property="id" />
+    <result column="camera_id" jdbcType="VARCHAR"  property="cameraId" />
+    <result column="address_id" jdbcType="VARCHAR"  property="addressId" />
+    <result column="encoder_server_id" jdbcType="VARCHAR"  property="encoderServerId" />
+    <result column="project_id" jdbcType="VARCHAR"  property="projectId" />
+    <result column="org_id" jdbcType="VARCHAR"  property="orgId" />
+  </resultMap>
+
+  <sql id="Customer_Column_List">
+    t.id,t.camera_id,t.address_id,t.encoder_server_id,t.project_id,t.org_id
+  </sql>
+
+</mapper>

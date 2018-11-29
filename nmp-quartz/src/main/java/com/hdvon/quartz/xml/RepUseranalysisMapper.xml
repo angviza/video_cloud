@@ -1,0 +1,22 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<!DOCTYPE mapper PUBLIC "-//mybatis.org//DTD Mapper 3.0//EN" "http://mybatis.org/dtd/mybatis-3-mapper.dtd">
+<mapper namespace="com.hdvon.quartz.mapper.RepUseranalysisMapper">
+    <resultMap id="BaseResultMap" type="com.hdvon.quartz.entity.RepUseranalysis">
+        <id column="id" jdbcType="VARCHAR" property="id" />
+        <result column="account" jdbcType="VARCHAR"  property="account" />
+        <result column="online_total" jdbcType="INTEGER"  property="onlineTotal" />
+        <result column="loigin_total" jdbcType="INTEGER"  property="loiginTotal" />
+        <result column="invite_total" jdbcType="INTEGER"  property="inviteTotal" />
+        <result column="replay_total" jdbcType="INTEGER"  property="replayTotal" />
+        <result column="download_total" jdbcType="INTEGER"  property="downloadTotal" />
+        <result column="control_total" jdbcType="INTEGER"  property="controlTotal" />
+        <result column="other_total" jdbcType="VARCHAR"  property="otherTotal" />
+        <result column="start_time" jdbcType="TIMESTAMP"  property="startTime" />
+        <result column="creat_time" jdbcType="TIMESTAMP"  property="creatTime" />
+    </resultMap>
+
+    <sql id="Customer_Column_List">
+        t.id,t.account,t.online_total,t.loigin_total,t.invite_total,t.replay_total,t.download_total,t.control_total,t.other_total,t.start_time,t.creat_time
+    </sql>
+
+</mapper>

@@ -1,0 +1,60 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<!DOCTYPE mapper PUBLIC "-//mybatis.org//DTD Mapper 3.0//EN" "http://mybatis.org/dtd/mybatis-3-mapper.dtd">
+<mapper namespace="com.hdvon.nmp.mapper.UserNoticeMapper">
+    <resultMap id="BaseResultMap" type="com.hdvon.nmp.vo.UserNoticeVo">
+        <id column="id" jdbcType="VARCHAR" property="id" />
+        <result column="user_Id" jdbcType="VARCHAR"  property="userId" />
+        <result column="notice_Id" jdbcType="VARCHAR"  property="noticeId" />
+        <result column="flag" jdbcType="INTEGER"  property="flag" />
+    </resultMap>
+
+    <sql id="Customer_Column_List">
+        t.id,t.user_Id,t.notice_Id,t.flag
+    </sql>
+    <select id="queryUserNoticeByParams" parameterType="java.lang.String" resultMap="BaseResultMap">
+        SELECT <include refid="Customer_Column_List"/>
+        FROM t_user_notice t
+        <where>
+            <if test="userId != null and userId != ''">
+                and t.user_Id = #{userId}
+            </if>
+            <if test="noticeId != null and noticeId != ''">
+                and t.notice_Id = #{noticeId}
+            </if>
+        </where>
+    </select>
+    <!--公告类型ID 用户ID查找-->
+    <select id="queryUserNoticeByTypeId" parameterType="java.lang.String" resultMap="BaseResultMap">
+        SELECT <include refid="Customer_Column_List"/>
+        FROM t_notice_type nt,t_notice n,t_user_notice t
+        <where>
+            t.notice_Id = n.id
+            <if test="userId != null and userId != ''">
+                and t.user_Id = #{userId}
+            </if>
+            <if test="flag != null">
+                and t.flag = #{flag}
+            </if>
+            and  n.notice_type_id = nt.id
+            AND  nt.id in
+            <foreach item="item" index="index" collection="array" open="(" separator="," close=")">
+                #{item}
+            </foreach>
+            GROUP BY t.id
+        </where>
+    </select>
+    <!--收件箱删除-->
+    <select id="queryUserNotice" parameterType="java.lang.String" resultMap="BaseResultMap">
+        SELECT <include refid="Customer_Column_List"/>
+        FROM t_user_notice t
+        <where>
+            <if test="userId != null and userId != ''">
+                and t.user_Id = #{userId}
+            </if>
+            AND  t.notice_Id in
+            <foreach item="item" index="index" collection="array" open="(" separator="," close=")">
+                #{item}
+            </foreach>
+        </where>
+    </select>
+</mapper>

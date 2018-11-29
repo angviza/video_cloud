@@ -1,0 +1,29 @@
+<#include "/macro.include"/>
+<#assign className = table.className>
+<#assign classNameFirstLower = table.classNameFirstLower>
+<#assign classPOName = table.className + 'Po'>
+<#assign classVOName = table.className + 'Vo'>
+<#macro mapperEl value>${r"#{"}${value}}</#macro>
+<#macro namespace>${className}.</#macro>
+<?xml version="1.0" encoding="UTF-8"?>
+<!DOCTYPE mapper PUBLIC "-//mybatis.org//DTD Mapper 3.0//EN" "http://mybatis.org/dtd/mybatis-3-mapper.dtd">
+<mapper namespace="${mapperPackage}.${className}Mapper">
+    <resultMap id="BaseResultMap" type="${voPackage}.${className}Vo">
+        <#list table.columns as column>
+        <#if table.idColumn.sqlName == column.sqlName>
+        <id column="${table.idColumn.sqlName}" jdbcType="${table.idColumn.jdbcSqlTypeName}" property="${table.idColumn.columnNameLower}" />
+        <#else>
+        <#if column.columnNameLower == "createTime" || column.columnNameLower == "updateTime" || column.columnNameLower == "createUser" || column.columnNameLower == "updateUser" ><!--</#if><result column="${column.sqlName}" jdbcType="${column.jdbcSqlTypeName}"  property="${column.columnNameLower}" /><#if column.columnNameLower == "createTime" || column.columnNameLower == "updateTime" || column.columnNameLower == "createUser" || column.columnNameLower == "updateUser" >--></#if>
+        </#if>
+        </#list>
+    </resultMap>
+
+    <#assign str2></#assign>
+    <#list table.columns as column>
+        <#if column.columnNameLower != "createTime" && column.columnNameLower != "updateTime" && column.columnNameLower != "createUser" && column.columnNameLower != "updateUser" ><#assign str2>${str2}t.${column.sqlName},</#assign></#if>
+    </#list>
+    <sql id="Customer_Column_List">
+        ${str2?substring(0,str2?length-1)}
+    </sql>
+
+</mapper>

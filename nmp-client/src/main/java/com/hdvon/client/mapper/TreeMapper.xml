@@ -1,0 +1,102 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<!DOCTYPE mapper PUBLIC "-//mybatis.org//DTD Mapper 3.0//EN" "http://mybatis.org/dtd/mybatis-3-mapper.dtd">
+<mapper namespace="com.hdvon.client.mapper.TreeMapper">
+
+	<select id="findAddressTree" resultType="com.hdvon.client.vo.CameraPermissionVo">
+	SELECT distinct(addr.id) as id,addr.`name` as name,addr.pid as pid,addr.code as code,null as deviceId,null as permissionValue,null as deviceCode,null as deviceType
+			FROM t_address  AS addr
+	</select>
+	
+	
+	<select id="findOrganizationTree" resultType="com.hdvon.client.vo.CameraPermissionVo">
+	SELECT distinct(org.id) as id,org.`name` as name,org.pid as pid,org.org_code as code,null as deviceId,null as permissionValue,null as deviceCode,null as deviceType
+			FROM t_organization org
+	</select>
+	
+	
+	<select id="findCameraGroupTree" parameterType="java.util.Map" resultType="com.hdvon.client.vo.CameraPermissionVo">
+		SELECT distinct(cg.id) as id,cg.`name` as name,cg.pid as pid,cg.code as code,null as deviceId,null as permissionValue,null as deviceCode,null as deviceType
+			FROM t_cameragrouop cg
+			<where>
+				<if test="isAdmin != 1 ">
+					and ( is_private = 0 or create_user=#{userName} )
+				</if>
+			</where>
+	</select>
+	
+	<!-- 项目树 -->
+	<select id="findProjectTree" resultType="com.hdvon.client.vo.CameraPermissionVo">
+		SELECT a.* from (
+		select dep.id as id,dep.name as name,dep.pid as pid,dep.dep_code as depCode,null as deviceId,null as permissionValue,null as deviceCode,null as deviceType,0 as isProject  
+			from t_department dep 
+		union 
+		select project.id as id,project.name as name,dep.id as pid,dep.dep_code as depCode,null as deviceId,null as permissionValue,null as deviceCode,null as deviceType,1 as isProject
+		 from t_project project, t_project_department prodep,t_department dep 
+		where project.id= prodep.project_id and (dep.id=prodep.constructor_dep_id or dep.id=prodep.builder_dep_id )
+		union 
+		select project.id as id,project.name as name,IFNULL(dep.pid,0) as pid,IFNULL(dep.dep_code,0) as depCode,null as deviceId,null as permissionValue,null as deviceCode,null as deviceType,1 as isProject
+		 from t_project project LEFT JOIN t_project_department prodep ON project.id= prodep.project_id
+			LEFT JOIN t_department dep ON dep.id=prodep.builder_dep_id
+		 )a 
+		group by a.id
+    </select>
+	
+ 	<!--  层级获取地址列表      -->
+    <select id="findChildAddress" parameterType="java.util.Map" resultType="com.hdvon.client.vo.CameraPermissionVo">
+		SELECT distinct(addr.id) as id,addr.`name` as name,addr.pid as pid,null as deviceId,null as permissionValue,null as deviceCode,null as deviceType
+			FROM t_address  AS addr
+		where addr.pid = #{pid}
+    </select>
+	
+
+
+ 	<!--  层级获取地址列表      -->
+    <select id="findChildOrganization" parameterType="java.util.Map" resultType="com.hdvon.client.vo.CameraPermissionVo">
+		SELECT distinct(org.id) as id,org.`name` as name,org.pid as pid,null as deviceId,null as permissionValue,null as deviceCode,null as deviceType
+			FROM t_organization org
+		where org.pid= #{pid}
+    </select>
+    
+    
+    <!--  层级获取自定义项目分组列表      -->
+    <select id="findChildCameraGroup" parameterType="java.util.Map" resultType="com.hdvon.client.vo.CameraPermissionVo">
+		SELECT distinct(cg.id) as id,cg.`name` as name,cg.pid as pid,null as deviceId,null as permissionValue,null as deviceCode,null as deviceType
+			FROM t_cameragrouop cg
+			where cg.pid= #{pid} 
+			<if test="isAdmin != 1 ">
+				and ( is_private = 0 or create_user=#{userName} )
+			</if>
+    </select>
+    
+    
+
+    
+    <!-- 获取项目分组顶级部门列表【根据项目去获取其顶级部门】 -->
+    <select id="findTopDept" parameterType="java.util.Map" resultType="com.hdvon.client.vo.CameraPermissionVo">
+	    select dep.id as id,dep.name as name,dep.pid as pid,dep.dep_code as depCode,null as permissionValue,null as deviceCode,null as deviceType 
+	 		from (select DISTINCT(substring_index(dep.dep_code_split,#{splitCodeSuffix}, 1)) as depCode from t_project project, t_project_department prodep,t_department dep
+		where project.id= prodep.project_id and dep.id=prodep.constructor_dep_id
+		union
+		select DISTINCT(substring_index(dep.dep_code_split,#{splitCodeSuffix}, 1)) as depCode from t_project project, t_project_department prodep,t_department dep
+		where project.id= prodep.project_id and dep.id=prodep.builder_dep_id
+			group by depCode) a,t_department dep where dep.dep_code=a.depCode
+    </select>
+    
+     <!--  层级获取自定义项目分组列表      -->
+    <select id="findChildProjectOrDept" parameterType="java.util.Map" resultType="com.hdvon.client.vo.CameraPermissionVo">
+	select dep.id as id,dep.name as name,dep.pid as pid,dep.dep_code as depCode,null as deviceId,null as permissionValue,null as deviceCode,null as deviceType,0 as isProject  
+		from t_department dep  where dep.pid=#{pid}
+	union 
+	select project.id as id,project.name as name,dep.pid as pid,dep.dep_code as depCode,null as deviceId,null as permissionValue,null as deviceCode,null as deviceType,1 as isProject
+	 from t_project project, t_project_department prodep,t_department dep 
+	where project.id= prodep.project_id and dep.id=prodep.constructor_dep_id and dep.id=#{pid}
+	union 
+	select project.id as id,project.name as name,dep.pid as pid,dep.dep_code as depCode,null as deviceId,null as permissionValue,null as deviceCode,null as deviceType,1 as isProject
+	 from t_project project, t_project_department prodep,t_department dep 
+	where project.id= prodep.project_id and dep.id=prodep.builder_dep_id and dep.id=#{pid}
+	group by id
+    </select>
+    
+    
+	
+</mapper>

@@ -1,0 +1,93 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<!DOCTYPE mapper PUBLIC "-//mybatis.org//DTD Mapper 3.0//EN" "http://mybatis.org/dtd/mybatis-3-mapper.dtd">
+<mapper namespace="com.hdvon.nmp.mapper.AlarmServerMapper">
+    <resultMap id="BaseResultMap" type="com.hdvon.nmp.vo.AlarmServerVo">
+        <id column="id" jdbcType="VARCHAR" property="id" />
+        <result column="name" jdbcType="VARCHAR"  property="name" />
+        <result column="code" jdbcType="VARCHAR"  property="code" />
+        <result column="ip" jdbcType="VARCHAR"  property="ip" />
+        <result column="jd" jdbcType="DOUBLE"  property="jd" />
+        <result column="wd" jdbcType="DOUBLE"  property="wd" />
+        <result column="address_id" jdbcType="VARCHAR"  property="addressId" />
+        <result column="camera_id" jdbcType="VARCHAR"  property="cameraId" />
+        <result column="present_id" jdbcType="VARCHAR"  property="presentId" />
+        <!--<result column="address_name" jdbcType="VARCHAR"  property="addressName" />-->
+        <!--<result column="camera_name" jdbcType="VARCHAR"  property="cameraName" />-->
+        <result column="present_name" jdbcType="VARCHAR"  property="presentName" />
+        <result column="description" jdbcType="VARCHAR"  property="description" />
+        <result column="enabled" jdbcType="INTEGER"  property="enabled" />
+        <!--<result column="create_time" jdbcType="TIMESTAMP"  property="createTime" />-->
+        <!--<result column="update_time" jdbcType="TIMESTAMP"  property="updateTime" />-->
+        <!--<result column="create_user" jdbcType="VARCHAR"  property="createUser" />-->
+        <!--<result column="update_user" jdbcType="VARCHAR"  property="updateUser" />-->
+    </resultMap>
+
+    <sql id="Customer_Column_List">
+        t.id,t.name,t.code,t.ip,t.jd,t.wd,t.address_id,t.camera_id,t.present_id,t.present_name,t.description,t.enabled
+    </sql>
+
+	<!-- 查询报警设备  -->
+	<select id="selectAlarmServerByParam" parameterType="map" resultMap="BaseResultMap">
+    	select 
+    		<include refid="Customer_Column_List"/>,
+			a.name as addressName,
+			d.SBMC as cameraName
+    	from
+    		t_alarm_server t, t_camera ca,t_device d, t_address a
+    	where
+			 a.id = t.address_id
+			and t.camera_id = ca.id
+			and d.id =ca.device_id
+    		<if test="id != null and id != ''">
+				and 	t.id = #{id}
+    		</if>
+    		<if test="name != null and name != ''">
+				and t.name = #{name}
+    		</if>
+    		<if test="code != null and code != ''">
+				and t.code = #{code}
+    		</if>
+    		<if test="enabled != null">
+    			and t.enabled = #{enabled}
+    		</if>
+    		<if test="addressId != null and addressId != ''">
+    			and t.address_id = #{addressId}
+    		</if>
+    </select>
+    <!-- 查询报警设备列表 -->
+    <select id="selectAlarmServersList" parameterType="map" resultMap="BaseResultMap">
+    	select
+    		<include refid="Customer_Column_List"/>,
+			a.name as addressName
+    	from 
+    		t_alarm_server t
+		left JOIN t_address a  on  a.id = t.address_id
+		<where>
+			t.enabled in (0 , 1)
+    		<if test="name != null and name != ''">
+    			and t.name like concat('%',#{name},'%')
+    		</if>
+    		<if test="code != null and code != ''">
+    			and t.code = #{code}
+    		</if>
+    		<if test="ip != null and ip !=''">
+    			and t.ip = #{ip}
+    		</if>
+    		<if test="enabled != null">
+    			and t.enabled = #{enabled}
+    		</if>
+    		<if test="addrIds != null and addrIds.size() > 0">
+                and t.address_id in
+                 <foreach collection="addrIds" item="item" open="(" close=")"  separator=",">
+	                #{item}
+	            </foreach>
+          	</if>
+    	</where>
+		order by t.create_time desc
+    </select>
+     <!-- 根据前面指定编码查询最大编码 -->
+    <select id="selectMaxCodeBycode" parameterType="map" resultType="java.lang.String">
+       SELECT MAX(code) from t_alarm_server where code like concat(#{code},'%')
+    </select>
+    
+</mapper>

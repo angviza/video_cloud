@@ -1,0 +1,39 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<!DOCTYPE mapper PUBLIC "-//mybatis.org//DTD Mapper 3.0//EN" "http://mybatis.org/dtd/mybatis-3-mapper.dtd">
+<mapper namespace="com.hdvon.quartz.mapper.PlatformInfoMapper">
+    <resultMap id="BaseResultMap" type="com.hdvon.quartz.vo.PlatformInfoVo">
+        <id column="id" jdbcType="BIGINT" property="id" />
+        <result column="user_name" jdbcType="VARCHAR"  property="userName" />
+        <result column="device_code" jdbcType="VARCHAR"  property="deviceCode" />
+        <result column="operate_time" jdbcType="TIMESTAMP"  property="operateTime" />
+        <result column="operate_type" jdbcType="VARCHAR"  property="operateType" />
+    </resultMap>
+
+    <sql id="Customer_Column_List">
+        t.id,t.device_code,t.operate_time,t.operate_type
+    </sql>
+    
+    <sql id="platInfo_concat">
+    	<if test="currentDate != null and currentDate != ''">
+			AND date_format(info.operate_time,'%Y-%m-%d') = #{currentDate}
+		</if>
+		<if test="startTime != null and startTime != ''">
+			AND unix_timestamp(info.operate_time) &gt;= unix_timestamp(#{startTime})
+		</if>
+		<if test="endTime != null and endTime != ''">
+			AND unix_timestamp(info.operate_time) &lt;= unix_timestamp(#{endTime})
+		</if>
+		GROUP BY info.operate_type,info.device_code
+	</sql>
+    
+    <select id="selectPlatInfoUseList" parameterType="map" resultType="java.util.HashMap">
+    	SELECT t.operate_type,case t.operate_type when '1' then '实时监控视频' when '2' then '录像回放视频' when '3' then '录像下载的摄像机' end AS operate_type_name,
+			SUM(t.amount) as sum_amount FROM (
+			SELECT info.operate_type,COUNT(info.device_code) as amount FROM t_platform_info info
+			WHERE 1=1
+			<include refid="platInfo_concat"></include>
+		) t
+		GROUP BY t.operate_type
+  	</select>
+  	
+</mapper>

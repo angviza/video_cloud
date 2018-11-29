@@ -1,0 +1,52 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<!DOCTYPE mapper PUBLIC "-//mybatis.org//DTD Mapper 3.0//EN" "http://mybatis.org/dtd/mybatis-3-mapper.dtd">
+<mapper namespace="com.hdvon.nmp.mapper.AlarmserverMappingMapper">
+    <resultMap id="BaseResultMap" type="com.hdvon.nmp.vo.AlarmserverMappingVo">
+        <id column="id" jdbcType="VARCHAR" property="id" />
+        <result column="project_id" jdbcType="VARCHAR"  property="projectId" />
+        <result column="alarmserver_id" jdbcType="VARCHAR"  property="alarmserverId" />
+        <!--<result column="project_name" jdbcType="VARCHAR"  property="projectName" />-->
+        <!--<result column="project_code" jdbcType="VARCHAR"  property="projectCode" />-->
+    </resultMap>
+
+    <sql id="Customer_Column_List">
+        t.id,t.project_id,t.alarmserver_id
+    </sql>
+    <select id="selectByParam" parameterType="map" resultMap="BaseResultMap">
+      select <include refid="Customer_Column_List"></include>  ,p.name as projectName,p.code as projectCode
+        from t_alarmserver_mapping t , t_project p ,t_alarm_server a
+      <where>
+          t.project_id = p.id and a.id = t.alarmserver_id and a.enabled in (0,1)
+	      <if test="alarmserverId != null and alarmserverId != ''">
+	        and t.alarmserver_id = #{alarmserverId}
+	      </if>
+      </where>
+   </select>
+	<select id="selectProjectByAlarmserverIds" parameterType="java.util.List" resultMap="BaseResultMap">
+    	select <include refid="Customer_Column_List"/>  ,p.name as projectName,p.code as projectCode
+        from t_alarmserver_mapping t, t_project p ,t_alarm_server a
+    	<where>
+            t.project_id = p.id and a.id = t.alarmserver_id and a.enabled in (0,1)
+    		<if test="alarmserverIds != null">
+    			<foreach collection="alarmserverIds" item="alarmserverId" index="index"
+		            open=" and t.alarmserver_id in(" close=")" separator=",">
+		            #{alarmserverId}
+		        </foreach>
+    		</if>
+    	</where>
+    </select>
+
+    <!--查询报警设备是否关联项目-->
+    <select id="selectAlarmProject"  resultType="int" parameterType="map">
+        SELECT count(t.id)
+        FROM t_alarmserver_mapping t, t_project p ,t_alarm_server a
+        <where>
+            t.project_id = p.id and a.id = t.alarmserver_id and a.enabled in (0,1)
+            and t.`project_id` in
+            <foreach collection="projectIds" item="item" open="(" close=")"  separator=",">
+                #{item}
+            </foreach>
+        </where>
+    </select>
+
+</mapper>

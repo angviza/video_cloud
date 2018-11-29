@@ -1,0 +1,70 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<!DOCTYPE mapper PUBLIC "-//mybatis.org//DTD Mapper 3.0//EN" "http://mybatis.org/dtd/mybatis-3-mapper.dtd">
+<mapper namespace="com.hdvon.nmp.mapper.DevicecodeOptionMapper">
+    <resultMap id="BaseResultMap" type="com.hdvon.nmp.vo.DevicecodeOptionVo">
+        <id column="id" jdbcType="VARCHAR" property="id" />
+        <result column="province" jdbcType="VARCHAR"  property="province" />
+        <result column="city" jdbcType="VARCHAR"  property="city" />
+        <result column="area" jdbcType="VARCHAR"  property="area" />
+        <result column="basic_nnit" jdbcType="VARCHAR"  property="basicNnit" />
+        <result column="industry" jdbcType="VARCHAR"  property="industry" />
+        <result column="industry_name" jdbcType="VARCHAR"  property="industryName" />
+        <result column="type" jdbcType="VARCHAR"  property="type" />
+        <result column="internet" jdbcType="VARCHAR"  property="internet" />
+        <result column="contorl_type" jdbcType="VARCHAR"  property="contorlType" />
+        <result column="region" jdbcType="VARCHAR"  property="region" />
+        <result column="investment" jdbcType="VARCHAR"  property="investment" />
+        <result column="construction" jdbcType="VARCHAR"  property="construction" />
+        <result column="number" jdbcType="INTEGER"  property="number" />
+        <!-- 扩展字段 -->
+        <result column="deviceCode" jdbcType="VARCHAR"  property="deviceCode" />
+        <result column="status" jdbcType="INTEGER"  property="status" />
+        <result column="create_time" jdbcType="TIMESTAMP"  property="createTime" />
+        <!--<result column="update_time" jdbcType="TIMESTAMP"  property="updateTime" />-->
+        <!--<result column="create_user" jdbcType="VARCHAR"  property="createUser" />-->
+        <!--<result column="update_user" jdbcType="VARCHAR"  property="updateUser" />-->
+    </resultMap>
+
+    <sql id="Customer_Column_List">
+        t.id,t.province,t.city,t.area,t.basic_nnit,t.industry,t.industry_name,t.type,t.internet,t.contorl_type,t.region,t.investment,t.construction,t.number
+    </sql>
+    
+    <select id="selectByParam" parameterType="map" resultMap="BaseResultMap">
+	   SELECT t.number,dcode.id,dcode.device_code as deviceCode,dcode.status,t.create_time as create_time,
+			(select name from t_devicecode_dictionary where code=t.province limit 1)as province,
+			(select name from t_devicecode_dictionary where code=t.city limit 1)as city,
+			(select name from t_devicecode_dictionary where code=t.area  and position='1,2,3,4,5,6' and  p_code=concat('1,2,3,4$',t.city) limit 1)as area,
+			(select name from t_devicecode_dictionary where code=t.basic_nnit and position='7,8' and p_code=concat('1,2,3,4,5,6$',t.area) limit 1)as basic_nnit,
+			(select name from t_devicecode_dictionary where code=t.industry and position='9,10' limit 1)as industry,
+			(select name from t_devicecode_dictionary where code=t.industry_name and position='15,16,17,18,19,20'  limit 1)as industry_name,
+			(select name from t_devicecode_dictionary where code=t.type  and position='11,12,13'  limit 1)as type,
+			(select name from t_devicecode_dictionary where code=t.internet and position='14' limit 1)as internet,
+			(select name from t_devicecode_dictionary where code=t.contorl_type and position='15,16,17' limit 1)as contorl_type,
+			(select name from t_devicecode_dictionary where code=t.region and position='15,16,17' limit 1)as region,
+			(select name from t_devicecode_dictionary where code=t.investment and position='15,16,17,18,19,20' limit 1)as investment,
+			(select name from t_devicecode_dictionary where code=t.construction and position='15,16,17,18,19,20'limit 1)as construction
+		FROM  t_devicecode_option as t,t_devicecode_code as dcode where t.id =dcode.devicecode_option_id 
+		 <if test="deviceCode != null and deviceCode !=''">
+		    and dcode.device_code like concat(#{deviceCode},'%')
+		 </if>
+		 <if test="devieCodeId != null and devieCodeId !=''">
+		    and dcode.id =#{devieCodeId}
+		 </if>
+		 <if test="province != null and province !=''">
+		   and t.province =#{province}
+		 </if>
+		 <if test="city != null and city !=''">
+		   and t.city =#{city}
+		 </if>
+		 <if test="area != null and area !=''">
+		   and t.area =#{area}
+		 </if>
+		 <if test="basicNnit != null and basicNnit !=''">
+		    and t.basic_nnit =#{basicNnit}
+		 </if>
+		 
+		ORDER BY dcode.device_code desc
+    
+    </select>
+
+</mapper>
